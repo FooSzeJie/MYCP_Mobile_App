@@ -4,18 +4,18 @@ import 'package:client/screens/Car%20Register/car_register_screen.dart';
 import 'package:client/screens/Car%20Parking/car_parking_screen.dart';
 import 'package:client/screens/Profile/profile_screen.dart';
 import 'package:client/screens/transaction/transaction_screen.dart';
+import 'package:client/screens/Login/login_screen.dart'; // Import the LoginScreen
 import 'package:flutter/material.dart';
 
-
 class HomePage extends StatelessWidget {
-
   // Creating static data in list
-  List catNames = [
+  List<String> catNames = [
     "Car Parking",
     "Car Register",
     "Transaction",
     "Scan",
     "Profile",
+    "Logout",
   ];
 
   List<Color> catColors = [
@@ -24,15 +24,16 @@ class HomePage extends StatelessWidget {
     Color(0xFF618DFD),
     Color(0xFFFC7F7F),
     Color(0xFFCB84FB),
-    // Color(0xFF78E667),
+    Color(0xFF78E667),
   ];
 
   List<Icon> catIcon = [
-    Icon(Icons.car_repair, color: Colors.white, size: 60,),
-    Icon(Icons.car_rental, color: Colors.white, size: 60,),
-    Icon(Icons.assignment, color: Colors.white, size: 60,),
-    Icon(Icons.camera, color: Colors.white, size: 60,),
-    Icon(Icons.person, color: Colors.white, size: 60,),
+    Icon(Icons.car_repair, color: Colors.white, size: 50),
+    Icon(Icons.car_rental, color: Colors.white, size: 50),
+    Icon(Icons.assignment, color: Colors.white, size: 50),
+    Icon(Icons.camera, color: Colors.white, size: 50),
+    Icon(Icons.person, color: Colors.white, size: 50),
+    Icon(Icons.logout, color: Colors.white, size: 50),
   ];
 
   List<Widget> catLink = [
@@ -41,6 +42,7 @@ class HomePage extends StatelessWidget {
     TransactionScreen(),
     Camera(),
     ProfileScreen(),
+    // Notice that the Logout action will be handled separately, not here.
   ];
 
   @override
@@ -48,9 +50,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       body: ListView(
         children: [
-
           TopBar(),
-
           Padding(
             padding: EdgeInsets.only(top: 20, left: 15, right: 15),
             child: Column(
@@ -60,16 +60,30 @@ class HomePage extends StatelessWidget {
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
+                    crossAxisCount: 3,
                     childAspectRatio: 1.1,
                   ),
                   itemBuilder: (context, index) {
                     return InkWell(
                       onTap: () {
-                        Navigator.push(context,
-                        MaterialPageRoute(
-                            builder: (context) => catLink[index]
-                        ));
+                        // Check if the clicked item is "Logout"
+                        if (catNames[index] == "Logout") {
+                          // Perform logout and navigate back to the login screen
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(),
+                            ),
+                          );
+                        } else {
+                          // Navigate to the selected screen
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => catLink[index],
+                            ),
+                          );
+                        }
                       },
                       child: Column(
                         children: [
@@ -83,29 +97,26 @@ class HomePage extends StatelessWidget {
                                 shape: BoxShape.rectangle,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-
                               child: Center(
                                 child: catIcon[index],
                               ),
                             ),
                           ),
-
-                          SizedBox(height: 10,),
-
+                          SizedBox(height: 10),
                           Text(
                             catNames[index],
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black.withOpacity(0.7)
+                              color: Colors.black.withOpacity(0.7),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     );
                   },
                 )
-            ],
+              ],
             ),
           )
         ],
