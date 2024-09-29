@@ -1,6 +1,6 @@
 import 'package:client/screens/Car%20Register/components/car.dart';
-import 'package:client/screens/Car%20Register/components/car_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class CarRegisterForm extends StatefulWidget {
 
@@ -13,7 +13,15 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
 
   TextEditingController colorController = TextEditingController();
 
+  TextEditingController brandController = TextEditingController();
+
   List<Car> cars = List.empty(growable: true);
+
+  final colors = ['White', 'Black', 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Silver'];
+  String? selectedColor;
+
+  final brands = ['Perodua', 'Totyota', 'Honda', 'Misutbisi', 'Mercedes-Benz', 'BMW', 'Audi', 'Proton', 'Tesla'];
+  String? selectedBrand;
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +40,72 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
             ),
           ),
 
-          SizedBox(height: 10,),
-
-          TextField(
-            controller: colorController,
-            decoration: InputDecoration(
-              hintText: "Car Color",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                "Car Color:",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black.withOpacity(0.7)
+                ),
               ),
-            ),
+
+              Container(
+                margin: EdgeInsets.all(16),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black, width: 1),
+                ),
+                child: DropdownButton<String>(
+                    value: selectedColor,
+                    iconSize: 36,
+                    icon: Icon(Icons.arrow_drop_down, color: Colors.black,),
+                    items: colors.map(buildMenuItem).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        this.selectedColor = value;
+                        colorController.text = value!; // Update the controller with the selected value
+                      });
+                    },
+                ),
+              ),
+            ],
+          ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                "Car Brand:",
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black.withOpacity(0.7)
+                ),
+              ),
+
+              Container(
+                margin: EdgeInsets.all(16),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black, width: 1),
+                ),
+                child: DropdownButton<String>(
+                  value: selectedBrand,
+                  iconSize: 36,
+                  icon: Icon(Icons.arrow_drop_down, color: Colors.black,),
+                  items: brands.map(buildMenuItem).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      this.selectedBrand = value;
+                      brandController.text = value!; // Update the controller with the selected value
+                    });
+                  },
+                ),
+              ),
+            ],
           ),
 
           SizedBox(height: 10,),
@@ -53,15 +117,19 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
                   onPressed: () {
                     String licensePlate = licensePlateController.text.trim();
                     String color = colorController.text.trim();
+                    String brand = brandController.text.trim();
 
                     if(licensePlate.isNotEmpty && color.isNotEmpty) {
                       setState(() {
                         cars.add(
                             Car(
                                 licensePlate: licensePlate,
-                                color: color
+                                color: color,
+                                brand: brand
                             )
                         );
+
+                        print(color);
                       });
                     }
                   },
@@ -88,6 +156,7 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
       ),
     );
   }
+
   Widget getRow(int index) {
   return Card(
     color: Colors.grey[200],
@@ -106,7 +175,8 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
               fontWeight: FontWeight.bold
             ),
           ),
-          Text(cars[index].color)
+          Text(cars[index].color),
+          Text(cars[index].brand)
         ],
       ),
 
@@ -135,5 +205,16 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
       ),
     ),
   );
-}
+  }
+
+  DropdownMenuItem<String> buildMenuItem(String item) => DropdownMenuItem(
+    value: item,
+    child: Text(
+      item,
+      style: TextStyle(
+          fontWeight: FontWeight.bold, fontSize: 20
+      ),
+    ),
+  );
+
 }

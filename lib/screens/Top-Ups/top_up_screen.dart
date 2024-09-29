@@ -1,3 +1,4 @@
+import 'package:client/screens/Top-Ups/components/top_up_form.dart';
 import 'package:flutter/material.dart';
 
 class TopUpScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
         centerTitle: true,
         title: Text("Top up"),
       ),
+      body: TopUpForm(),
     );
   }
 }

@@ -27,6 +27,7 @@ class ProfileForm extends StatelessWidget {
 
           TextField(
             controller: passwordController,
+            obscureText: true,
             decoration: InputDecoration(
               hintText: "Password",
               border: OutlineInputBorder(
