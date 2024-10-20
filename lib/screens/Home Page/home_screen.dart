@@ -1,6 +1,6 @@
 import 'package:client/screens/Camera/camera_screen.dart';
+import 'package:client/screens/Car/Car_List/car_list_screen.dart';
 import 'package:client/screens/Home%20Page/components/top_bar.dart';
-import 'package:client/screens/Car%20Register/car_register_screen.dart';
 import 'package:client/screens/Car%20Parking/car_parking_screen.dart';
 import 'package:client/screens/Profile/profile_screen.dart';
 import 'package:client/screens/transaction/transaction_screen.dart';
@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
       // Create the list of screens inside the build method, where widget.userId is available
       List<Widget> catLink = [
         CarParkingScreen(),
-        CarRegisterScreen(),
+        CarListScreen(),
         TransactionScreen(),
         Camera(),
         ProfileScreen(userId: widget.userId),
