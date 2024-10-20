@@ -2,7 +2,10 @@ import 'package:client/screens/Profile/components/profile_form.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+
+  final String userId;  // Pass the user ID when navigating to HomePage
+
+  const ProfileScreen({Key? key, required this.userId}) : super(key: key);  // Constructor with userId
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -19,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
         title: Text("Profile"),
       ),
-      body: ProfileForm(),
+      body: ProfileForm(userId: widget.userId),
     );
   }
 }
