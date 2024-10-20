@@ -1,4 +1,5 @@
 import 'package:client/screens/Login/login_screen.dart';
+import 'package:client/components/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -45,23 +46,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   _icon(),
                   SizedBox(height: 50),
+
                   _inputField("Username", usernameController),
+
                   SizedBox(height: 20),
+
                   _inputField("Email", emailController),
+
                   SizedBox(height: 20),
+
                   _inputField("Password", passwordController, isPassword: true),
+
                   SizedBox(height: 20),
+
                   _inputField("Phone Number", phoneController),
+
                   SizedBox(height: 50),
+
                   _registerButton(),
-                  if (errorMessage.isNotEmpty) ...[
-                    SizedBox(height: 20),
-                    Text(
-                      errorMessage,
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ],
+
                   SizedBox(height: 20),
+
                   _extraText(),
                 ],
               ),
@@ -146,74 +151,84 @@ class _RegisterScreenState extends State<RegisterScreen> {
         isLoading = false;
         errorMessage = 'Please fill in all fields.';
       });
+
+      // Show the Dialog
+      showDialogBox(
+        context,
+        title: 'Register Fail',       // Optional: Custom title
+        message: errorMessage,  // Required: Error message
+      );
+
       return;
     }
 
-    // Debug: Print the payload being sent to the backend
     final payload = {
       'email': email,
       'password': password,
       'name': name,
       'no_telephone': phone
     };
-    print('Payload being sent: $payload');
 
     try {
-      // Correctly construct the URL with the base URL from .env
       final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
       if (baseUrl == null || baseUrl.isEmpty) {
         throw Exception('Backend URL is not set correctly in the .env file.');
       }
 
-      print('Sending request to: $baseUrl/users/register'); // Print the URL for debugging
+      print('Sending request to: $baseUrl/users/register');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/users/register'), // Correct URL construction
+        Uri.parse('$baseUrl/users/register'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(payload), // Send the constructed payload
+        body: jsonEncode(payload),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 201) {
-        // Assuming a successful response from the server
         final data = jsonDecode(response.body);
 
-        if (data['token'] != null) {
-          // Store the token if required
-          String token = data['token'];
-          print('Token: $token');
-
-          // Navigate to the home screen
+        if (data['token'] != null && data['userId'] != null) {
+          String userId = data['userId'];
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => HomePage(userId: userId)),
           );
         } else {
-          setState(() {
-            errorMessage = data['message'] ?? 'Registration failed, please try again.';
-          });
+          errorMessage = data['message'] ?? 'Registration failed, please try again.';
+
+          // Show the Dialog
+          showDialogBox(
+            context,
+            title: 'Register Fail',       // Optional: Custom title
+            message: errorMessage,  // Required: Error message
+          );
         }
       } else {
-        // Capture and display backend error messages
         final errorData = jsonDecode(response.body);
-        setState(() {
-          errorMessage = errorData['message'] ?? 'Registration failed. Please try again.';
-        });
+        errorMessage = errorData['message'] ?? 'Registration failed. Please try again.';
+
+        // Show the Dialog
+        showDialogBox(
+          context,
+          title: 'Register Fail',       // Optional: Custom title
+          message: errorMessage,  // Required: Error message
+        );
       }
     } catch (e) {
-      print('Error occurred: $e'); // Print the actual error for debugging
-      setState(() {
-        errorMessage = 'An error occurred. Please check your connection and try again.';
-      });
+      print('Error occurred: $e');
+      errorMessage = 'An error occurred. Please check your connection and try again.';
+
+      // Show the Dialog
+      showDialogBox(
+        context,
+        title: 'Register Fail',       // Optional: Custom title
+        message: errorMessage,  // Required: Error message
+      );
     } finally {
       setState(() {
         isLoading = false;
       });
     }
   }
-
 
   Widget _extraText() {
     return InkWell(

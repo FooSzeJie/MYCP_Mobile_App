@@ -1,6 +1,7 @@
 import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:client/screens/Login/components/login_icon.dart';
 import 'package:client/screens/Register/register_screen.dart';
+import 'package:client/components/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -47,9 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   _inputField("Email", emailController),
                   SizedBox(height: 20),
                   _inputField("Password", passwordController, isPassword: true),
+
                   SizedBox(height: 50),
+
                   _loginButton(),
+
                   SizedBox(height: 20),
+
                   _extraText(),
                 ],
               ),
@@ -115,7 +120,14 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         isLoading = false;
       });
-      _showErrorDialog(context, 'Please fill in both email and password.');
+
+      // Show the Dialog
+      showDialogBox(
+        context,
+        title: 'Login Fail',       // Optional: Custom title
+        message: 'Please fill in both email and password.',  // Required: Error message
+      );
+
       return;
     }
 
@@ -127,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
         throw Exception('Backend URL is not set correctly in the .env file.');
       }
 
-      print('Sending request to: $baseUrl/users/login'); // Print the URL for debugging
+      // print('Sending request to: $baseUrl/users/login'); // Print the URL for debugging
 
       final response = await http.post(
         Uri.parse('$baseUrl/users/login'), // Correct URL construction
@@ -135,61 +147,54 @@ class _LoginScreenState extends State<LoginScreen> {
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      // print('Response status: ${response.statusCode}');
-      // print('Response body: ${response.body}');
-
+      // Check if the login is successful
       if (response.statusCode == 200) {
-        // Assuming a successful login response from the server
         final data = jsonDecode(response.body);
 
-        if (data['token'] != null) {
-          // Store the token if required
-          String token = data['token'];
-          print('Token: $token');
+        // Check if a token and userId are returned
+        if (data['token'] != null && data['userId'] != null) {
+          String userId = data['userId']; // Extract userId from response
 
-          // Navigate to the home screen
+          // print(userId);
+
+          // Navigate to the home screen and pass the userId
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => HomePage(userId: userId)), // Pass userId to HomePage
           );
         } else {
           setState(() {
             errorMessage = data['message'] ?? 'Invalid credentials, please try again.';
           });
-          _showErrorDialog(context, errorMessage);
+
+          // Show the Dialog
+          showDialogBox(
+            context,
+            title: 'Login Fail',       // Optional: Custom title
+            message: errorMessage,  // Required: Error message
+          );
         }
       } else {
-        _showErrorDialog(context, 'Login failed. Please try again.');
+        // Show the Dialog
+        showDialogBox(
+          context,
+          title: 'Login Fail',       // Optional: Custom title
+          message: 'Login failed. Please try again.',  // Required: Error message
+        );
       }
     } catch (e) {
       print('Error occurred: $e'); // Print the actual error for debugging
-      _showErrorDialog(context, 'An error occurred. Please check your connection and try again.');
+      // Show the Dialog
+      showDialogBox(
+        context,
+        title: 'Login Fail',       // Optional: Custom title
+        message: 'An error occurred. Please check your connection and try again.',  // Required: Error message
+      );
     } finally {
       setState(() {
         isLoading = false;
       });
     }
-  }
-
-  // Function to show the error dialog
-  Future<void> _showErrorDialog(BuildContext context, String errorMessage) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Login Fail'),
-          content: Text(errorMessage),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Widget _extraText() {
