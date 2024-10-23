@@ -127,7 +127,7 @@ class _ProfileFormState extends State<ProfileForm> {
 
             SizedBox(height: 10),
 
-            InputField(controller: passwordController, hintText: 'Password', isPassword: true),
+            InputField(controller: passwordController, hintText: 'Password', isPassword: true, cannotBeEmpty: false,),
 
             SizedBox(height: 10),
 
