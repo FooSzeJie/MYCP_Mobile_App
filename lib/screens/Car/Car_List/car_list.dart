@@ -1,16 +1,75 @@
 import 'package:client/screens/Car/Car_Register/car_register_screen.dart';
 import 'package:client/screens/Car/components/car.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
 
 class CarList extends StatefulWidget {
-  const CarList({super.key});
+  final String userId;  // Pass the user ID when navigating to HomePage
+
+  const CarList({Key? key, required this.userId}) : super(key: key);  // Constructor with userId
 
   @override
   State<CarList> createState() => _CarListState();
 }
 
 class _CarListState extends State<CarList> {
-  List<Car> cars = List.empty(growable: true); // List to hold the cars
+  List<Car> cars = []; // List to hold the cars
+  bool isLoading = true;  // Loading indicator
+  String errorMessage = '';  // For displaying any error that occurs
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCarList();  // Fetch the cars when the widget is initialized
+  }
+
+  Future<void> _fetchCarList() async {
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+
+      // Correct the URL to match your backend route
+      final url = Uri.parse('$baseUrl/vehicles/user/${widget.userId}');
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data.containsKey('vehicles')) {
+          setState(() {
+            // Map the vehicles data into the Car model, using null-aware operators
+            cars = List<Car>.from(
+                data['vehicles'].map((car) => Car(
+                  licensePlate: car['license_plate'] ?? 'Unknown',  // Fallback to 'Unknown' if null
+                  color: car['color'] ?? 'Not specified',         // Fallback to 'Not specified'
+                  brand: car['brand'] ?? 'Unknown',               // Fallback to 'Unknown'
+                ))
+            );
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            isLoading = false;
+            errorMessage = 'No vehicles found for the user.';
+          });
+        }
+      } else {
+        throw Exception('Failed to load car information: ${response.body}');
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error occurred: $error';  // Set the error message for display
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +84,19 @@ class _CarListState extends State<CarList> {
             ],
           ),
           const SizedBox(height: 20),
-          cars.isEmpty
+
+          // Show loading indicator while fetching data
+          isLoading
+              ? const CircularProgressIndicator()
+              : cars.isEmpty && errorMessage.isEmpty
               ? const Text(
             'No Cars yet...',
             style: TextStyle(fontSize: 22),
+          )
+              : errorMessage.isNotEmpty
+              ? Text(
+            errorMessage,
+            style: const TextStyle(fontSize: 18, color: Colors.red),
           )
               : Expanded(
             child: ListView.builder(
@@ -56,7 +124,7 @@ class _CarListState extends State<CarList> {
           // Await the returned Car object from the form
           final Car? newCar = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CarRegisterScreen()),
+            MaterialPageRoute(builder: (context) => CarRegisterScreen(userId: widget.userId)),
           );
 
           // Add the new car to the list if not null

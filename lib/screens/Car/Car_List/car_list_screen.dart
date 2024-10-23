@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 
 class CarListScreen extends StatefulWidget {
 
+  final String userId;  // Pass the user ID when navigating to HomePage
+
+  const CarListScreen({Key? key, required this.userId}) : super(key: key);  // Constructor with userId
+
   @override
   State<CarListScreen> createState() => _CarListScreenState();
 }
@@ -16,7 +20,7 @@ class _CarListScreenState extends State<CarListScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: Text(
+        title: const Text(
             "Car List",
           style: TextStyle(
             fontWeight: FontWeight.bold,
@@ -26,7 +30,7 @@ class _CarListScreenState extends State<CarListScreen> {
       ),
 
       // body: CarRegisterForm(),
-      body: CarList(),
+      body: CarList(userId: widget.userId),
     );
   }
 }

@@ -2,6 +2,10 @@ import 'package:client/screens/Car/components/car.dart';
 import 'package:flutter/material.dart';
 
 class CarRegisterForm extends StatefulWidget {
+  final String userId;  // Pass the user ID when navigating to HomePage
+
+  const CarRegisterForm({Key? key, required this.userId}) : super(key: key);  // Constructor with userId
+
   @override
   State<CarRegisterForm> createState() => _CarRegisterFormState();
 }

@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage> {
       // Create the list of screens inside the build method, where widget.userId is available
       List<Widget> catLink = [
         CarParkingScreen(),
-        CarListScreen(),
+        CarListScreen(userId: widget.userId),
         TransactionScreen(),
         Camera(),
         ProfileScreen(userId: widget.userId),
