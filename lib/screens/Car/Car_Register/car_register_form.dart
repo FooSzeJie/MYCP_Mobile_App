@@ -1,5 +1,10 @@
 import 'package:client/screens/Car/components/car.dart';
+import 'package:client/components/dialog.dart';
+import 'package:client/screens/Car/Car_List/car_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For decoding JSON responses
 
 class CarRegisterForm extends StatefulWidget {
   final String userId;  // Pass the user ID when navigating to HomePage
@@ -41,6 +46,92 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
     'Tesla'
   ];
   String? selectedBrand;
+
+  bool isLoading = true;
+  String errorMessage = '';
+
+  Future<void> _handleCreateCar() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    final licensePlate = licensePlateController.text.trim();
+    final color = colorController.text.trim();
+    final brand = brandController.text.trim();
+
+    if (licensePlate.isEmpty || color.isEmpty || brand.isEmpty) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Please fill in all fields.';
+      });
+
+      // Show the Dialog
+      showDialogBox(
+        context,
+        title: 'Car Register Fail',       // Optional: Custom title
+        message: errorMessage,  // Required: Error message
+      );
+
+      return;
+    }
+
+    final payload = {
+      'license_plate': licensePlate,
+      'color': color,
+      'brand': brand,
+      'creator': widget.userId
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+
+      // print('Sending request to: $baseUrl/users/register');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/vehicles/create'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CarListScreen(userId: widget.userId)),
+        );
+
+      } else {
+        final errorData = jsonDecode(response.body);
+        errorMessage = errorData['message'] ?? 'Registration failed. Please try again.';
+
+        // Show the Dialog
+        showDialogBox(
+          context,
+          title: 'Car Register Fail 2',       // Optional: Custom title
+          message: errorMessage,  // Required: Error message
+        );
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      errorMessage = 'An error occurred. Please check your connection and try again.';
+
+      // Show the Dialog
+      showDialogBox(
+        context,
+        title: 'Register Fail',       // Optional: Custom title
+        message: errorMessage,  // Required: Error message
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +181,7 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          _saveCar(context);
+                          _handleCreateCar();
                         },
                         child: Text("Save")),
                   ],
@@ -100,26 +191,6 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
           ),
         ),
       );
-  }
-
-  // Save the car and return to the previous screen
-  void _saveCar(BuildContext context) {
-    String licensePlate = licensePlateController.text.trim();
-    String color = colorController.text.trim();
-    String brand = brandController.text.trim();
-
-    if (licensePlate.isEmpty || color.isEmpty || brand.isEmpty) {
-      _showErrorDialog(context, "All fields must be filled.");
-      return;
-    }
-
-    final newCar = Car(
-      licensePlate: licensePlate,
-      color: color,
-      brand: brand,
-    );
-
-    Navigator.pop(context, newCar); // Return the new car
   }
 
   Widget _buildDropdownField({
@@ -164,24 +235,4 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
     ),
   );
-
-  Future<void> _showErrorDialog(BuildContext context, String errorMessage) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(errorMessage),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
