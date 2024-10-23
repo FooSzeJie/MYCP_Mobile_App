@@ -1,6 +1,7 @@
 import 'package:client/screens/Car/Car_Edit/car_edit_screen.dart';
 import 'package:client/screens/Car/Car_Register/car_register_screen.dart';
 import 'package:client/screens/Car/components/car.dart';
+import 'package:client/components/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,13 +18,13 @@ class CarList extends StatefulWidget {
 
 class _CarListState extends State<CarList> {
   List<Car> cars = []; // List to hold the cars
-  bool isLoading = true;  // Loading indicator
-  String errorMessage = '';  // For displaying any error that occurs
+  bool isLoading = true; // Loading indicator
+  String errorMessage = ''; // For displaying any error that occurs
 
   @override
   void initState() {
     super.initState();
-    _fetchCarList();  // Fetch the cars when the widget is initialized
+    _fetchCarList(); // Fetch the cars when the widget is initialized
   }
 
   Future<void> _fetchCarList() async {
@@ -46,12 +47,15 @@ class _CarListState extends State<CarList> {
           setState(() {
             // Map the vehicles data into the Car model, using null-aware operators
             cars = List<Car>.from(
-                data['vehicles'].map((car) => Car(
-                  id: car['_id'].toString() ?? '',
-                  licensePlate: car['license_plate'] ?? 'Unknown',  // Fallback to 'Unknown' if null
-                  color: car['color'] ?? 'Not specified',         // Fallback to 'Not specified'
-                  brand: car['brand'] ?? 'Unknown',               // Fallback to 'Unknown'
-                ))
+                data['vehicles'].map((car) =>
+                    Car(
+                      id: car['_id'].toString() ?? '',
+                      licensePlate: car['license_plate'] ?? 'Unknown',
+                      // Fallback to 'Unknown' if null
+                      color: car['color'] ?? 'Not specified',
+                      // Fallback to 'Not specified'
+                      brand: car['brand'] ?? 'Unknown', // Fallback to 'Unknown'
+                    ))
             );
             isLoading = false;
           });
@@ -68,7 +72,37 @@ class _CarListState extends State<CarList> {
       print('Error occurred: $error');
       setState(() {
         isLoading = false;
-        errorMessage = 'Error occurred: $error';  // Set the error message for display
+        errorMessage =
+        'Error occurred: $error'; // Set the error message for display
+      });
+    }
+  }
+
+  Future<void> _deleteCar(String carId) async {
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+
+      // Correct the URL to match your backend route
+      final url = Uri.parse('$baseUrl/vehicles/$carId/delete');
+
+      final response = await http.delete(url);
+
+      if (response.statusCode == 200) {
+        setState(() {
+          // Remove the car from the list after successful deletion
+          cars.removeWhere((car) => car.id == carId);
+        });
+      } else {
+        throw Exception('Failed to delete car: ${response.body}');
+      }
+    } catch (error) {
+      print('Error occurred while deleting: $error');
+      setState(() {
+        errorMessage = 'Error occurred: $error';
       });
     }
   }
@@ -126,7 +160,8 @@ class _CarListState extends State<CarList> {
           // Await the returned Car object from the form
           final Car? newCar = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CarRegisterScreen(userId: widget.userId)),
+            MaterialPageRoute(
+                builder: (context) => CarRegisterScreen(userId: widget.userId)),
           );
 
           // Add the new car to the list if not null
@@ -186,7 +221,8 @@ class _CarListState extends State<CarList> {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      const Icon(Icons.color_lens, color: Colors.grey, size: 20),
+                      const Icon(
+                          Icons.color_lens, color: Colors.grey, size: 20),
                       const SizedBox(width: 5),
                       Text(
                         'Color: ${car.color}',
@@ -217,10 +253,11 @@ class _CarListState extends State<CarList> {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CarEditScreen(
-                      userId: widget.userId,        // Pass userId
-                      car: car,                     // Pass the specific car object
-                    ),
+                    builder: (context) =>
+                        CarEditScreen(
+                          userId: widget.userId, // Pass userId
+                          car: car, // Pass the specific car object
+                        ),
                   ),
                 );
               },
@@ -233,15 +270,27 @@ class _CarListState extends State<CarList> {
 
             const SizedBox(width: 12,),
 
-            const Icon(
-              Icons.delete,
-              size: 30,
-              color: Colors.red,
+            InkWell(
+              onTap: () async {
+                // Show confirmation dialog before deleting
+                final shouldDelete = await showConfirmationDialog(
+                  context,
+                  title: 'Delete Car',
+                  message: 'Are you sure you want to delete this car?'
+                );
+                if (shouldDelete) {
+                  _deleteCar(car.id); // Call delete function
+                }
+              },
+              child: const Icon(
+                Icons.delete,
+                size: 30,
+                color: Colors.red,
+              ),
             ),
           ],
         ),
       ),
     );
   }
-
 }
