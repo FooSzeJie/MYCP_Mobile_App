@@ -120,29 +120,31 @@ class _ProfileFormState extends State<ProfileForm> {
 
     return Padding(
       padding: EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          InputField(controller: nameController, hintText: 'Name'),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            InputField(controller: nameController, hintText: 'Name'),
 
-          SizedBox(height: 10),
+            SizedBox(height: 10),
 
-          InputField(controller: passwordController, hintText: 'Password', isPassword: true),
+            InputField(controller: passwordController, hintText: 'Password', isPassword: true),
 
-          SizedBox(height: 10),
+            SizedBox(height: 10),
 
-          InputField(controller: phoneController, hintText: 'Phone Number'),
+            InputField(controller: phoneController, hintText: 'Phone Number'),
 
-          SizedBox(height: 10),
+            SizedBox(height: 10),
 
-          InputField(controller: emailController, hintText: 'Email', isEmail: true, enabled: false,),
+            InputField(controller: emailController, hintText: 'Email', isEmail: true, enabled: false,),
 
-          SizedBox(height: 30),
+            SizedBox(height: 30),
 
-          ElevatedButton(
-            onPressed: _handleUpdateProfile,
-            child: Text("Update"),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: _handleUpdateProfile,
+              child: Text("Update"),
+            ),
+          ],
+        ),
       ),
     );
   }
