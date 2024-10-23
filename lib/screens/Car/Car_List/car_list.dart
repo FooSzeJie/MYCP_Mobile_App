@@ -1,3 +1,4 @@
+import 'package:client/screens/Car/Car_Edit/car_edit_screen.dart';
 import 'package:client/screens/Car/Car_Register/car_register_screen.dart';
 import 'package:client/screens/Car/components/car.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,7 @@ class _CarListState extends State<CarList> {
             // Map the vehicles data into the Car model, using null-aware operators
             cars = List<Car>.from(
                 data['vehicles'].map((car) => Car(
+                  id: car['_id'].toString() ?? '',
                   licensePlate: car['license_plate'] ?? 'Unknown',  // Fallback to 'Unknown' if null
                   color: car['color'] ?? 'Not specified',         // Fallback to 'Not specified'
                   brand: car['brand'] ?? 'Unknown',               // Fallback to 'Unknown'
@@ -207,9 +209,39 @@ class _CarListState extends State<CarList> {
                 ],
               ),
             ),
+
+            // Edit Button
+            InkWell(
+              onTap: () async {
+                // Pass the specific car details to the CarEditScreen
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CarEditScreen(
+                      userId: widget.userId,        // Pass userId
+                      car: car,                     // Pass the specific car object
+                    ),
+                  ),
+                );
+              },
+              child: const Icon(
+                Icons.edit,
+                size: 30,
+                color: Colors.blueAccent,
+              ),
+            ),
+
+            const SizedBox(width: 12,),
+
+            const Icon(
+              Icons.delete,
+              size: 30,
+              color: Colors.red,
+            ),
           ],
         ),
       ),
     );
   }
+
 }
