@@ -1,4 +1,5 @@
 import 'package:client/screens/Car/Car_List/car_list.dart';
+import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class CarListScreen extends StatefulWidget {
@@ -27,7 +28,19 @@ class _CarListScreenState extends State<CarListScreen> {
             letterSpacing: 1,
           ),
         ),
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () {
+          // Navigate to a specific page when the back button is pressed
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomePage(userId: widget.userId), // Replace `HomePage` with your desired page
+            ),
+          );
+        },
       ),
+    ),
 
       // body: CarRegisterForm(),
       body: CarList(userId: widget.userId),

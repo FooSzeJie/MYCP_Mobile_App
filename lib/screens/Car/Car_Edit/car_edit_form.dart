@@ -69,6 +69,7 @@ class _CarEditForm extends State<CarEditForm> {
 
     try {
       final url = Uri.parse('$baseUrl/vehicles/${widget.car.id}/update');
+
       Map<String, dynamic> body = {
         'license_plate': licensePlateController.text,
         'color': colorController.text,
@@ -82,19 +83,18 @@ class _CarEditForm extends State<CarEditForm> {
       );
 
       if (response.statusCode == 200) {
-        // Show the Dialog
-        showDialogBox(
+        // Show the dialog and wait for it to be dismissed
+        await showDialogBox(
           context,
-          title: 'Updated Successfully',       // Optional: Custom title
-          message: "You are successfully updated the car information.",  // Required: Error message
+          title: 'Updated Successfully',
+          message: "You have successfully updated the car information.",
         );
 
-        Navigator.push(
+        // After dialog is dismissed, navigate back to the car list
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => CarListScreen(
-              userId: widget.userId,        // Pass userId
-            ),
+            builder: (context) => CarListScreen(userId: widget.userId),
           ),
         );
 
