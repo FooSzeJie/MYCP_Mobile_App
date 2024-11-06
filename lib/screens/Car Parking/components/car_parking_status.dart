@@ -1,4 +1,5 @@
-import 'package:client/screens/Car%20Parking/components/car_parking_update_form.dart';
+import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_screen.dart';
+import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_form.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:client/components/dialog.dart';
@@ -120,16 +121,24 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
           countdownTime--;
         });
       } else {
-        timer.cancel();
+        timer.cancel(); // Stop the timer
+        if (carParkingId != null) {
+          _terminateTimer(carParkingId!); // Automatically terminate when time reaches 0
+        } else {
+          setState(() {
+            errorMessage = 'Parking ID not found for automatic termination.';
+          });
+        }
       }
     });
   }
+
 
   void extendTimer() {
     if (carParkingId != null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => CarParkingUpdate(userId: widget.userId, carParkingId: carParkingId!)), // Use '!' to assert non-null
+        MaterialPageRoute(builder: (context) => CarParkingUpdateScreen(userId: widget.userId, carParkingId: carParkingId!)), // Use '!' to assert non-null
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
