@@ -1,5 +1,5 @@
 import 'package:client/screens/Car%20Parking/components/car_parking_form.dart';
-import 'package:client/screens/Car Parking/components/step_progress_modal.dart';
+import 'package:client/screens/Car%20Parking/Create%20Car%20Parking/create_car_parking_form.dart';
 import 'package:client/screens/Car Parking/components/car_parking_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -86,7 +86,7 @@ class _CarParkingScreenState extends State<CarParkingScreen> {
           ? Center(child: Text(errorMessage!))
           : parkingStatus == "ongoing"
           ? CarParkingStatus(userId: widget.userId,) // Show CarParkingStatus widget
-          : StepProgressModal(userId: widget.userId), // Show StepProgressModal widget
+          : CreateCarParkingForm(userId: widget.userId), // Show StepProgressModal widget
     );
   }
 }
