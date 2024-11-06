@@ -1,6 +1,10 @@
 import 'package:client/screens/Car%20Parking/components/car_parking_form.dart';
 import 'package:client/screens/Car Parking/components/step_progress_modal.dart';
+import 'package:client/screens/Car Parking/components/car_parking_status.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; // For decoding JSON responses
 
 class CarParkingScreen extends StatefulWidget {
   final String userId;  // Pass the user ID when navigating to HomePage
@@ -12,6 +16,54 @@ class CarParkingScreen extends StatefulWidget {
 }
 
 class _CarParkingScreenState extends State<CarParkingScreen> {
+  bool isLoading = true;
+  String? errorMessage;
+  String? parkingStatus; // Variable to hold the parking status
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCarParkingByUser();
+  }
+
+  Future<void> _fetchCarParkingByUser() async {
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+
+      final url = Uri.parse('$baseUrl/car_parking/${widget.userId}/status');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Assume the response has a key 'carParking' that contains a list of parking data
+        if (data.containsKey('carParking') && data['carParking'].isNotEmpty) {
+          setState(() {
+            parkingStatus = data['carParking'][0]['status']; // Get status of the first car parking
+            isLoading = false;
+          });
+        }
+        else {
+          setState(() {
+            isLoading = false;
+          });
+        }
+      } else {
+        throw Exception('Failed to load car information: ${response.body}');
+      }
+    } catch (error) {
+      print('Error occurred: $error');
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error occurred: $error';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,9 +80,13 @@ class _CarParkingScreenState extends State<CarParkingScreen> {
           ),
         ),
       ),
-
-      // body: CarParkingForm(),
-      body: StepProgressModal(userId: widget.userId),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : errorMessage != null
+          ? Center(child: Text(errorMessage!))
+          : parkingStatus == "ongoing"
+          ? CarParkingStatus(userId: widget.userId,) // Show CarParkingStatus widget
+          : StepProgressModal(userId: widget.userId), // Show StepProgressModal widget
     );
   }
 }

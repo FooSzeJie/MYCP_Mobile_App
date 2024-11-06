@@ -165,7 +165,7 @@ class _StepProgressModalState extends State<StepProgressModal> {
       errorMessage = '';
     });
 
-    final starting_time = DateTime.now();
+    final starting_time = DateTime.now().toUtc();
     final duration = _selectedDuration;
     final local_authority = "MBJB";
     final vehicle = _selectedCarPlate;
