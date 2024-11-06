@@ -1,4 +1,4 @@
-import 'package:client/screens/Car%20Parking/components/car_parking_update_form.dart';
+import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_form.dart';
 import 'package:flutter/material.dart';
 
 class CarParkingUpdateScreen extends StatefulWidget {
