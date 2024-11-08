@@ -65,7 +65,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Fetch car parking time and terminate if duration is zero
   Future<void> checkParkingTime() async {
     try {
       final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
@@ -76,15 +75,20 @@ class _HomePageState extends State<HomePage> {
         final data = jsonDecode(response.body);
         if (data.containsKey('carParking') && data['carParking'].isNotEmpty) {
           final parkingData = data['carParking'][0];
-          carParkingId = parkingData['_id'];
+          final carParkingId = parkingData['_id'];
 
           if (parkingData.containsKey('end_time')) {
             final endTime = DateTime.parse(parkingData['end_time']).toUtc();
             final now = DateTime.now().toUtc();
             final remainingDuration = endTime.difference(now).inSeconds;
 
-            if (remainingDuration <= 0 && carParkingId != null) {
-              _terminateTimer(carParkingId!); // Auto terminate if time reached zero
+            if (remainingDuration == 600) { // 10-minute warning
+              await _sendSMSNotification("You have 10 minutes left for your car parking.");
+              print("10 minutes");
+            } else if (remainingDuration <= 0) { // Parking time over
+              await _sendSMSNotification("Your car parking duration is over.");
+              await _terminateTimer(carParkingId); // Auto terminate parking session
+              print("Times Ups");
             }
           }
         }
@@ -93,6 +97,30 @@ class _HomePageState extends State<HomePage> {
       print('Error checking parking time: $error');
     }
   }
+
+  Future<void> _sendSMSNotification(String message) async {
+    final payload = {
+      'message': message
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/car_parking/${widget.userId}/SMS'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        print("SMS error: $errorData");
+      }
+    } catch (e) {
+      print('Error occurred while sending SMS: $e');
+    }
+  }
+
+
 
   // Terminate parking session
   Future<void> _terminateTimer(String carParkingId) async {

@@ -25,7 +25,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
 
   List<String> _carPlates = []; // Updated to fetch from the server
   final Map<String, int> _hourlyDurations = {
-    '30 minutes': 30,
+    '30 minutes': 11,
     '1 hour': 60,
     '2 hours': 120,
     '4 hours': 240,
