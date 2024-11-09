@@ -2,7 +2,9 @@ import 'package:client/screens/Top-Ups/components/top_up_form.dart';
 import 'package:flutter/material.dart';
 
 class TopUpScreen extends StatefulWidget {
-  const TopUpScreen({super.key});
+  final String userId;
+
+  const TopUpScreen({Key? key, required this.userId}) : super(key: key);
 
   @override
   State<TopUpScreen> createState() => _TopUpScreenState();
@@ -19,7 +21,7 @@ class _TopUpScreenState extends State<TopUpScreen> {
         centerTitle: true,
         title: Text("Top up"),
       ),
-      body: TopUpForm(),
+      body: TopUpForm(userId: widget.userId),
     );
   }
 }

@@ -99,7 +99,7 @@ class _TopBarState extends State<TopBar> {
             child: InkWell(
               onTap: () {
                 Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => TopUpScreen(),
+                  builder: (context) => TopUpScreen(userId: widget.userId),
                 ));
               },
               child: Row(
