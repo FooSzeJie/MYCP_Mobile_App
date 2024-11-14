@@ -1,3 +1,4 @@
+import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:client/screens/Top-Ups/components/top_up_form.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,20 @@ class _TopUpScreenState extends State<TopUpScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text("Top up"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate to a specific page when the back button is pressed
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(userId: widget.userId), // Replace `HomePage` with your desired page
+              ),
+            );
+          },
+        ),
       ),
+
       body: TopUpForm(userId: widget.userId),
     );
   }

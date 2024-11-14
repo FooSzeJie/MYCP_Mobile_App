@@ -1,8 +1,10 @@
-import 'package:client/screens/Top-Ups/card_form/card_form_screen.dart';
-import 'package:client/screens/Top-Ups/card_form/paypal_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:client/components/dialog.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:convert';
 
 class TopUpForm extends StatefulWidget {
   final String userId;
@@ -15,8 +17,128 @@ class TopUpForm extends StatefulWidget {
 
 class _TopUpFormState extends State<TopUpForm> {
   final TextEditingController moneyController = TextEditingController();
-
   final List<int> moneys = [10, 20, 50, 100, 200];
+  String? _paymentStatus;
+  bool _isLoading = false;
+  WebViewController? _webViewController;
+
+  @override
+  void initState() {
+    super.initState();
+    moneyController.addListener(() {
+      setState(() {}); // Update the form UI whenever input changes
+    });
+  }
+
+  Future<void> _processPayPalPayment() async {
+    setState(() {
+      _isLoading = true;
+      _paymentStatus = null;
+    });
+
+    final payload = {'money': moneyController.text};
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set in the .env file.');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/transaction/${widget.userId}/paypal'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      final responseData = json.decode(response.body);
+      if (response.statusCode == 201 && responseData["approvalLink"] != null) {
+        final approvalLink = responseData["approvalLink"];
+        final orderID = responseData["orderID"];
+        _showPayPalWebView(approvalLink, orderID);
+      } else {
+        setState(() {
+          _paymentStatus = "Payment initiation failed";
+        });
+      }
+    } catch (error) {
+      setState(() {
+        _paymentStatus = "Error: $error";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showPayPalWebView(String approvalLink, String orderID) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            height: 500,
+            child: WebView(
+              initialUrl: approvalLink,
+              javascriptMode: JavascriptMode.unrestricted,
+              onWebViewCreated: (controller) => _webViewController = controller,
+              onPageStarted: (url) {
+                if (url.contains('paypal-success')) {
+                  Navigator.pop(context); // Close WebView dialog
+                  _capturePayment(orderID);
+                } else if (url.contains('paypal-cancel')) {
+                  Navigator.pop(context); // Close WebView dialog
+                  setState(() {
+                    _paymentStatus = "Payment canceled";
+                  });
+                }
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _capturePayment(String orderID) async {
+    final capturePayload = {'orderID': orderID};
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/transaction/${widget.userId}/paypal/capture'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(capturePayload),
+      );
+
+      final responseData = json.decode(response.body);
+      if (responseData["success"] == true) {
+        showDialogBox(
+          context,
+          title: 'Success',
+          message: 'Payment Successfully.',
+        );
+
+        setState(() {
+          _paymentStatus = "Payment Successful!";
+        });
+      } else {
+        showDialogBox(
+          context,
+          title: 'Failed',
+          message: 'Payment Failed.',
+        );
+
+        setState(() {
+          _paymentStatus = "Payment failed";
+        });
+      }
+    } catch (error) {
+      setState(() {
+        _paymentStatus = "Error capturing payment: $error";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +146,6 @@ class _TopUpFormState extends State<TopUpForm> {
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
       child: Column(
         children: [
-          // TextField with custom formatter
           TextField(
             controller: moneyController,
             decoration: InputDecoration(
@@ -46,11 +167,10 @@ class _TopUpFormState extends State<TopUpForm> {
             ],
           ),
 
-          const SizedBox(height: 10), // Space between TextField and ListView
+          const SizedBox(height: 10),
 
-          // Horizontal ListView of predefined amounts
           Container(
-            height: 40, // Slightly increased height for better UI spacing
+            height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: moneys.length,
@@ -60,11 +180,10 @@ class _TopUpFormState extends State<TopUpForm> {
                   padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Set the moneyController text to the predefined amount as a formatted string
                       moneyController.text = amount.toStringAsFixed(2);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue, // Button background color
+                      backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -79,26 +198,15 @@ class _TopUpFormState extends State<TopUpForm> {
             ),
           ),
 
-          const SizedBox(height: 50), // Space above the "Top Up" button
+          const SizedBox(height: 50),
 
-          // Top Up button
           ElevatedButton(
-            onPressed: () {
-              final amount = moneyController.text;
-              print('Amount: RM $amount');
-              // Navigate to CardFormScreen or next screen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PaypalScreen(userId: widget.userId, amount: amount),
-                ),
-              );
-            },
+            onPressed: moneyController.text.isNotEmpty ? _processPayPalPayment : null,
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              minimumSize: const Size(double.infinity, 50), // Full-width button
+              minimumSize: const Size(double.infinity, 50),
             ),
             child: const Padding(
               padding: EdgeInsets.all(8.0),
@@ -108,6 +216,8 @@ class _TopUpFormState extends State<TopUpForm> {
               ),
             ),
           ),
+
+          if (_isLoading) CircularProgressIndicator(),
         ],
       ),
     );
