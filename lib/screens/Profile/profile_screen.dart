@@ -1,3 +1,4 @@
+import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:client/screens/Profile/components/profile_form.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +22,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text("Profile"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate to a specific page when the back button is pressed
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(userId: widget.userId), // Replace `HomePage` with your desired page
+              ),
+            );
+          },
+        ),
       ),
       body: ProfileForm(userId: widget.userId),
     );

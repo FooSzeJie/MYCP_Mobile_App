@@ -1,6 +1,7 @@
 import 'package:client/screens/Car%20Parking/components/car_parking_form.dart';
 import 'package:client/screens/Car%20Parking/Create%20Car%20Parking/create_car_parking_form.dart';
 import 'package:client/screens/Car Parking/components/car_parking_status.dart';
+import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -78,6 +79,18 @@ class _CarParkingScreenState extends State<CarParkingScreen> {
             fontWeight: FontWeight.bold,
             letterSpacing: 1,
           ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate to a specific page when the back button is pressed
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(userId: widget.userId), // Replace `HomePage` with your desired page
+              ),
+            );
+          },
         ),
       ),
       body: isLoading
