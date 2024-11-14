@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'dart:convert';
 
 class PayPalForm extends StatefulWidget {
@@ -16,31 +15,9 @@ class PayPalForm extends StatefulWidget {
 }
 
 class _PayPalFormState extends State<PayPalForm> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController amountController = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
-  bool _isFormValid = false;
   bool _isLoading = false;
   String? _paymentStatus;
-
-  @override
-  void initState() {
-    super.initState();
-    amountController.text = widget.amount;
-    nameController.addListener(_validateForm);
-    emailController.addListener(_validateForm);
-    amountController.addListener(_validateForm);
-  }
-
-  void _validateForm() {
-    setState(() {
-      _isFormValid = nameController.text.isNotEmpty &&
-          amountController.text.isNotEmpty &&
-          _formKey.currentState?.validate() == true;
-    });
-  }
+  WebViewController? _webViewController;
 
   Future<void> _processPayPalPayment() async {
     setState(() {
@@ -67,19 +44,11 @@ class _PayPalFormState extends State<PayPalForm> {
       final responseData = json.decode(response.body);
       if (response.statusCode == 201 && responseData["approvalLink"] != null) {
         final approvalLink = responseData["approvalLink"];
-
-        // Redirect user to PayPal approval page
-        if (await canLaunch(approvalLink)) {
-          await launch(approvalLink);
-
-          // After user approval, attempt capture (this should be triggered after user returns)
-          await _capturePayment(responseData["orderID"]);
-        } else {
-          throw Exception("Could not launch PayPal approval link");
-        }
+        final orderID = responseData["orderID"];
+        _showPayPalWebView(approvalLink, orderID);
       } else {
         setState(() {
-          _paymentStatus = "Payment Failed";
+          _paymentStatus = "Payment initiation failed";
         });
       }
     } catch (error) {
@@ -91,6 +60,42 @@ class _PayPalFormState extends State<PayPalForm> {
         _isLoading = false;
       });
     }
+  }
+
+  void _showPayPalWebView(String approvalLink, String orderID) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            height: 500,
+            child: WebView(
+              initialUrl: approvalLink,
+              javascriptMode: JavascriptMode.unrestricted,
+              onWebViewCreated: (controller) {
+                _webViewController = controller;
+              },
+              onPageStarted: (String url) {
+                print("Page started loading: $url");
+
+                if (url.contains('paypal-success')) {
+                  Navigator.pop(context); // Close WebView dialog
+                  _capturePayment(orderID); // Capture payment after user approval
+                } else if (url.contains('paypal-cancel')) {
+                  Navigator.pop(context); // Close WebView dialog
+                  setState(() {
+                    _paymentStatus = "Payment canceled";
+                  });
+                }
+              },
+              navigationDelegate: (NavigationRequest request) {
+                return NavigationDecision.navigate;
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _capturePayment(String orderID) async {
@@ -111,7 +116,8 @@ class _PayPalFormState extends State<PayPalForm> {
         });
       } else {
         setState(() {
-          _paymentStatus = "Payment Failed";
+          print("Response Data: $responseData");
+          _paymentStatus = "Payment failed";
         });
       }
     } catch (error) {
@@ -128,49 +134,10 @@ class _PayPalFormState extends State<PayPalForm> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: "Full Name",
-                    prefixIcon: Icon(Icons.person),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your full name';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-
-                TextFormField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: "Amount",
-                    prefixIcon: Icon(Icons.attach_money),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an amount';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
           _isLoading
               ? CircularProgressIndicator()
               : ElevatedButton(
-            onPressed: _isFormValid ? _processPayPalPayment : null,
+            onPressed: _processPayPalPayment,
             child: Text("Pay with PayPal"),
           ),
           if (_paymentStatus != null) ...[
