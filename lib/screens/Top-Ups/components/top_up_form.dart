@@ -1,4 +1,5 @@
 import 'package:client/screens/Top-Ups/card_form/card_form_screen.dart';
+import 'package:client/screens/Top-Ups/card_form/paypal_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -89,7 +90,7 @@ class _TopUpFormState extends State<TopUpForm> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CardFormScreen(userId: widget.userId),
+                  builder: (context) => PaypalScreen(userId: widget.userId, amount: amount),
                 ),
               );
             },

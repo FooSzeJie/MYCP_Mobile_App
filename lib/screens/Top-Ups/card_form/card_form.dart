@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 class CardForm extends StatefulWidget {
   final String userId;
 
-  const CardForm({Key? key, required this.userId}) : super(key: key);
+  final String amount;
+
+  const CardForm({Key? key, required this.userId, required this.amount}) : super(key: key);
 
   @override
   State<CardForm> createState() => _CardFormState();
@@ -139,27 +141,6 @@ class _CardFormState extends State<CardForm> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: priceController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      PriceInputFormatter(),
-                    ],
-                    decoration: const InputDecoration(
-                      labelText: "Price",
-                      prefixText: "\$ ",
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a valid price';
-                      }
-                      return null;
-                    },
-                  ),
                 ],
               ),
             ),
@@ -247,21 +228,6 @@ class CardMonthInputFormatter extends TextInputFormatter {
     return TextEditingValue(
       text: buffer.toString(),
       selection: TextSelection.collapsed(offset: buffer.length),
-    );
-  }
-}
-
-class PriceInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    double value = double.tryParse(digitsOnly) ?? 0;
-    String formatted = (value / 100).toStringAsFixed(2);
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
