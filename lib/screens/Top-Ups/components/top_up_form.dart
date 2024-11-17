@@ -1,3 +1,4 @@
+import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:client/components/dialog.dart';
@@ -122,6 +123,11 @@ class _TopUpFormState extends State<TopUpForm> {
         setState(() {
           _paymentStatus = "Payment Successful!";
         });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+        );
       } else {
         showDialogBox(
           context,
@@ -132,6 +138,11 @@ class _TopUpFormState extends State<TopUpForm> {
         setState(() {
           _paymentStatus = "Payment failed";
         });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+        );
       }
     } catch (error) {
       setState(() {

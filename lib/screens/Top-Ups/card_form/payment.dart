@@ -1,3 +1,4 @@
+import 'package:client/screens/Home%20Page/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -114,11 +115,21 @@ class _PayPalFormState extends State<PayPalForm> {
         setState(() {
           _paymentStatus = "Payment Successful!";
         });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+        );
       } else {
         setState(() {
           print("Response Data: $responseData");
           _paymentStatus = "Payment failed";
         });
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+        );
       }
     } catch (error) {
       setState(() {
