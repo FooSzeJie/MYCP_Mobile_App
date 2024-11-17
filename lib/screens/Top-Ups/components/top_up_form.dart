@@ -113,6 +113,7 @@ class _TopUpFormState extends State<TopUpForm> {
       );
 
       final responseData = json.decode(response.body);
+
       if (responseData["success"] == true) {
         showDialogBox(
           context,
@@ -120,14 +121,13 @@ class _TopUpFormState extends State<TopUpForm> {
           message: 'Payment Successfully.',
         );
 
-        setState(() {
-          _paymentStatus = "Payment Successful!";
+        // Delay navigation to allow the dialog box to display
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+          );
         });
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
-        );
       } else {
         showDialogBox(
           context,
@@ -135,14 +135,13 @@ class _TopUpFormState extends State<TopUpForm> {
           message: 'Payment Failed.',
         );
 
-        setState(() {
-          _paymentStatus = "Payment failed";
+        // Delay navigation to allow the dialog box to display
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
+          );
         });
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage(userId: widget.userId)),
-        );
       }
     } catch (error) {
       setState(() {
@@ -228,7 +227,7 @@ class _TopUpFormState extends State<TopUpForm> {
             ),
           ),
 
-          if (_isLoading) CircularProgressIndicator(),
+          if (_isLoading) const CircularProgressIndicator(),
         ],
       ),
     );
@@ -240,13 +239,8 @@ class CurrencyInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    // Remove any non-numeric characters
     String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-
-    // Convert to double for currency formatting
     double value = double.parse(newText) / 100;
-
-    // Format as currency with two decimal places
     String formattedValue = value.toStringAsFixed(2);
 
     return TextEditingValue(

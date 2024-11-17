@@ -238,7 +238,7 @@ class _CarListState extends State<CarList> {
                       const SizedBox(width: 5),
                       Text(
                         'Brand: ${car.brand}',
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ],
                   ),

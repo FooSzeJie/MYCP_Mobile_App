@@ -1,8 +1,7 @@
+import 'package:client/components/confirm_dialog.dart';
 import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_screen.dart';
-import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_form.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:client/components/dialog.dart';
 import 'package:client/screens/Car%20Parking/car_parking_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -133,7 +132,6 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
     });
   }
 
-
   void extendTimer() {
     if (carParkingId != null) {
       Navigator.pushReplacement(
@@ -147,9 +145,17 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
     }
   }
 
-  void stopTimer() {
+  Future<void> stopTimer() async {
     if (carParkingId != null) {
-      _terminateTimer(carParkingId!);
+      final shouldTerminate = await showConfirmationDialog(
+        context,
+        title: 'Terminate Car Parking',
+        message: 'Are you sure you want to terminate the car parking?',
+      );
+
+      if (shouldTerminate) {
+        _terminateTimer(carParkingId!); // Terminate the parking if confirmed
+      }
     } else {
       setState(() {
         errorMessage = 'Parking ID not found for termination.';
@@ -186,6 +192,7 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             Divider(),
+
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: Text(
@@ -207,7 +214,7 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
                   ),
                   SizedBox(width: 20),
                   ElevatedButton(
-                    onPressed: stopTimer,
+                    onPressed: stopTimer, // Call stopTimer directly
                     child: Text(
                       'Stop',
                       style: TextStyle(fontSize: 25),
