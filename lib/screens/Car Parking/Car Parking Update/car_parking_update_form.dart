@@ -142,6 +142,8 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
 
       if (response.statusCode == 200) {
 
+        await _handleCreateParkingTransaction();
+
         showDialogBox(
           context,
           title: 'Success',
@@ -154,6 +156,59 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
         );
 
       } else {
+        final errorData = jsonDecode(response.body);
+        errorMessage = errorData['message'] ?? 'Creation failed. Please try again.';
+
+        showDialogBox(
+          context,
+          title: 'Error',
+          message: errorMessage,
+        );
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      showDialogBox(
+        context,
+        title: 'Error',
+        message: 'An unexpected error occurred. Please try again.',
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleCreateParkingTransaction() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    // final starting_time = DateTime.now().toUtc();
+    final starting_time = DateTime.now().toLocal();
+    final local_authority = "MBJB";
+
+    final payload = {
+      "money" :  _totalPrice,
+      'date': starting_time.toIso8601String(),
+      'deliver': local_authority,
+      'creator': widget.userId,
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/transaction/create'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 201) {
         final errorData = jsonDecode(response.body);
         errorMessage = errorData['message'] ?? 'Creation failed. Please try again.';
 
