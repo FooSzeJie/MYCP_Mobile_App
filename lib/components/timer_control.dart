@@ -88,7 +88,7 @@ class _TimerControlWidgetState extends State<TimerControlWidget> {
                 ),
                 child: Text(
                   "Extend",
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 15),
                 ),
               ),
 
@@ -108,7 +108,7 @@ class _TimerControlWidgetState extends State<TimerControlWidget> {
                 ),
                 child: Text(
                   "Terminate",
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 15),
                 ),
               ),
             ],

@@ -176,7 +176,7 @@ class TransactionDetail extends StatelessWidget {
                     Text(
                       "${this.date}",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold
                       ),
                     )
