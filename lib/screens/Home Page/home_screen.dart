@@ -159,7 +159,7 @@ class _HomePageState extends State<HomePage> {
     List<Widget> catLink = [
       CarParkingScreen(userId: widget.userId),
       CarListScreen(userId: widget.userId),
-      TransactionScreen(),
+      TransactionScreen(userId: widget.userId,),
       Camera(),
       ProfileScreen(userId: widget.userId),
     ];

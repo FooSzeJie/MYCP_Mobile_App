@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 
 class TransactionDetail extends StatelessWidget {
 
-  final double token, money;
-  final String top_up_date;
+  final double money;
+  final String date;
+  final String status;
+  final String deliver;
 
   const TransactionDetail({
     super.key,
-    required this.token,
     required this.money,
-    required this.top_up_date
+    required this.date,
+    required this.status,
+    required this.deliver,
   });
 
   @override
@@ -69,7 +72,7 @@ class TransactionDetail extends StatelessWidget {
                     ),
 
                     Text(
-                      "${this.token}",
+                      "${this.money}",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold
@@ -129,6 +132,40 @@ class TransactionDetail extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
+                      "Deliver to",
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black.withOpacity(0.7)
+                      ),
+                    ),
+
+                    Text(
+                      deliver,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+
+            Card(
+              elevation: 5,
+              margin: EdgeInsets.symmetric(vertical: 8, horizontal: 5),
+              shape: RoundedRectangleBorder(
+                side: BorderSide(
+                  color: Colors.grey,
+                ),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
                       "Date",
                       style: TextStyle(
                           fontSize: 20,
@@ -137,7 +174,7 @@ class TransactionDetail extends StatelessWidget {
                     ),
 
                     Text(
-                      "${this.top_up_date}",
+                      "${this.date}",
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold

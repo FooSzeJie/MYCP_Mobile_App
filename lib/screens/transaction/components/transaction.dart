@@ -1,8 +1,10 @@
 class Transaction {
-  final double token;
+  final String id;
   final double money;
-  final String top_up_date;
+  final String date;
+  final String status;
+  final String deliver;
 
-  Transaction(this.token, this.money, this.top_up_date);
+  Transaction({required this.id, required this.money, required this.date, required this.status, required this.deliver});
 
 }
