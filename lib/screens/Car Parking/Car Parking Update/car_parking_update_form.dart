@@ -95,7 +95,7 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
           final parkingData = data['carParking'][0];
 
           setState(() {
-            _selectedCarPlate = parkingData['vehicle'];
+            _selectedCarPlate = parkingData['vehicle']['license_plate'];
             isLoading = false;
           });
         } else {

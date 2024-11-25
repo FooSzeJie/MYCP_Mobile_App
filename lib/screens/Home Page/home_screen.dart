@@ -1,6 +1,6 @@
 import 'package:client/components/confirm_dialog.dart';
 import 'package:client/components/timer_control.dart'; // Import TimerControlWidget
-import 'package:client/screens/Camera/camera_screen.dart';
+import "package:client/screens/Saman/saman_screen.dart";
 import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_screen.dart';
 import 'package:client/screens/Car/Car_List/car_list_screen.dart';
 import 'package:client/screens/Home%20Page/components/top_bar.dart';
@@ -34,7 +34,7 @@ class _HomePageState extends State<HomePage> {
     "Car Parking",
     "Car Register",
     "Transaction",
-    "Scan",
+    "Saman",
     "Profile",
     "Logout",
   ];
@@ -136,7 +136,7 @@ class _HomePageState extends State<HomePage> {
       CarParkingScreen(userId: widget.userId),
       CarListScreen(userId: widget.userId),
       TransactionScreen(userId: widget.userId),
-      Camera(),
+      SamanScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),
     ];
 

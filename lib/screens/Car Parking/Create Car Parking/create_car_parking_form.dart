@@ -18,12 +18,15 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
   int _activeStepIndex = 0;
   String _selectedTimeOption = ''; // Holds 'daily' or 'hourly'
   String _selectedCarPlate = '';
+  String _selectedCarPlateId = ''; // To store the selected vehicle ID
   int _selectedDuration = 0; // Duration in minutes
   double _totalPrice = 0.0;
   bool isLoading = true;
   String errorMessage = '';
 
-  List<String> _carPlates = []; // Updated to fetch from the server
+  // List<String> _carPlates = []; // Updated to fetch from the server
+  List<Map<String, String>> _vehicles = [];
+
   final Map<String, int> _hourlyDurations = {
     '30 minutes': 30,
     '1 hour': 60,
@@ -92,8 +95,14 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
 
         if (data.containsKey('vehicles')) {
           setState(() {
-            _carPlates = List<String>.from(
-                data['vehicles'].map((car) => car['license_plate'].toString()));
+            _vehicles = List<Map<String, String>>.from(
+              data['vehicles'].map(
+                    (car) => {
+                  'id': car['_id'].toString(),
+                  'license_plate': car['license_plate'].toString(),
+                },
+              ),
+            );
             isLoading = false;
           });
         } else {
@@ -168,7 +177,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
     final starting_time = DateTime.now().toUtc();
     final duration = _selectedDuration;
     final local_authority = "MBJB";
-    final vehicle = _selectedCarPlate;
+    final vehicle = _selectedCarPlateId;
 
     final payload = {
       'starting_time': starting_time.toIso8601String(),
@@ -415,16 +424,17 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
   DropdownButton<String> _carPlateDropdown() {
     return DropdownButton<String>(
       value: _selectedCarPlate.isEmpty ? null : _selectedCarPlate,
-      hint: Text('Select car plate', style: TextStyle(fontSize: 16.0)),
-      items: _carPlates.map((plate) {
+      hint: const Text('Select car plate', style: TextStyle(fontSize: 16.0)),
+      items: _vehicles.map((vehicle) {
         return DropdownMenuItem(
-          value: plate,
-          child: Text(plate, style: TextStyle(fontSize: 16.0)),
+          value: vehicle['license_plate'],
+          child: Text(vehicle['license_plate'] ?? '', style: const TextStyle(fontSize: 16.0)),
         );
       }).toList(),
       onChanged: (value) {
         setState(() {
           _selectedCarPlate = value ?? '';
+          _selectedCarPlateId = _vehicles.firstWhere((v) => v['license_plate'] == value)['id']!;
         });
       },
     );
