@@ -4,9 +4,10 @@ import 'package:client/screens/transaction/components/transaction.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'package:intl/intl.dart'; // For date formatting
 
 class TransactionList extends StatefulWidget {
-  final String userId; // Pass the user ID when navigating to HomePage
+  final String userId;
 
   const TransactionList({Key? key, required this.userId}) : super(key: key);
 
@@ -16,24 +17,44 @@ class TransactionList extends StatefulWidget {
 
 class _TransactionListState extends State<TransactionList> {
   List<Transaction> transList = [];
-  bool isLoading = true; // Loading indicator
-  String errorMessage = ''; // For displaying any error that occurs
+  bool isLoading = true;
+  String errorMessage = '';
+  DateTime? selectedStartDate; // Start date for filtering
+  DateTime? selectedEndDate; // End date for filtering
 
   @override
   void initState() {
     super.initState();
-    _fetchTransactionList(); // Fetch transactions when the widget initializes
+    // Show today's transactions by default
+    final today = DateTime.now();
+    selectedStartDate = DateTime(today.year, today.month, today.day);
+    selectedEndDate = DateTime(today.year, today.month, today.day);
+    _fetchTransactionList(); // Fetch today's transactions
   }
 
   Future<void> _fetchTransactionList() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
     try {
       final baseUrl = dotenv.env["FLUTTER_APP_BACKEND_URL"];
-
       if (baseUrl == null || baseUrl.isEmpty) {
         throw Exception('Backend URL is not set correctly in the .env file.');
       }
 
-      final url = Uri.parse('$baseUrl/transaction/${widget.userId}/list');
+      // Format dates for the API
+      final startDateString = selectedStartDate != null
+          ? DateFormat('yyyy-MM-dd').format(selectedStartDate!)
+          : null;
+      final endDateString = selectedEndDate != null
+          ? DateFormat('yyyy-MM-dd').format(selectedEndDate!)
+          : null;
+
+      // API endpoint with optional date filters
+      final url = Uri.parse(
+          '$baseUrl/transaction/${widget.userId}/list?start_date=$startDateString&end_date=$endDateString');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -45,16 +66,17 @@ class _TransactionListState extends State<TransactionList> {
               data['transaction'].map(
                     (transaction) => Transaction(
                   id: transaction['_id']?.toString() ?? '',
+                  name: transaction['name']?.toString() ?? '',
                   money: (transaction['money'] is int
                       ? (transaction['money'] as int).toDouble()
                       : transaction['money']) ??
-                      0.0, // Ensure valid number
-                  date: transaction['date'] ?? 'No Date', // Default 'No Date' if missing
-                  status: transaction['status'] ?? 'Unknown', // Default 'Unknown' if missing
-                  deliver: transaction['deliver'] ?? 'Unknown', // Default 'Unknown' if missing
+                      0.0,
+                  date: transaction['date'] ?? 'No Date',
+                  status: transaction['status'] ?? 'Unknown',
+                  deliver: transaction['deliver'] ?? 'Unknown',
                 ),
               ),
-            ).whereType<Transaction>().toList(); // Filter out invalid transactions
+            ).whereType<Transaction>().toList();
             isLoading = false;
           });
         } else {
@@ -75,8 +97,28 @@ class _TransactionListState extends State<TransactionList> {
     }
   }
 
+  void _selectDateRange() async {
+    final pickedRange = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020), // Adjust to the earliest possible date
+      lastDate: DateTime.now(),
+      initialDateRange: selectedStartDate != null && selectedEndDate != null
+          ? DateTimeRange(start: selectedStartDate!, end: selectedEndDate!)
+          : null,
+    );
+
+    if (pickedRange != null) {
+      setState(() {
+        selectedStartDate = pickedRange.start;
+        selectedEndDate = pickedRange.end;
+      });
+
+      // Fetch filtered transactions
+      _fetchTransactionList();
+    }
+  }
+
   Widget _buildTransactionTile(Transaction trans) {
-    // Determine icon and color based on the transaction status
     final isInTransaction = trans.status == 'in';
     final iconData = isInTransaction ? Icons.arrow_upward : Icons.arrow_downward;
     final iconColor = isInTransaction ? Colors.green : Colors.red;
@@ -92,6 +134,7 @@ class _TransactionListState extends State<TransactionList> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => TransactionDetail(
+                  name: trans.name,
                   money: trans.money,
                   date: trans.date,
                   status: trans.status,
@@ -103,7 +146,7 @@ class _TransactionListState extends State<TransactionList> {
           child: ListTile(
             leading: Container(
               decoration: BoxDecoration(
-                color: iconBackgroundColor, // Background color
+                color: iconBackgroundColor,
                 borderRadius: BorderRadius.circular(50),
               ),
               padding: const EdgeInsets.all(10),
@@ -114,13 +157,15 @@ class _TransactionListState extends State<TransactionList> {
               ),
             ),
             title: Text(
-              'RM ${trans.money.toStringAsFixed(2)}',
+              '${trans.name} (RM ${trans.money.toStringAsFixed(2)})',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: iconColor,
               ),
             ),
-            subtitle: Text(trans.date),
+            subtitle: Text(
+              'Date: ${trans.date}\nDeliver: ${trans.deliver}',
+            ),
             trailing: const Icon(Icons.remove_red_eye_outlined),
           ),
         ),
@@ -128,25 +173,47 @@ class _TransactionListState extends State<TransactionList> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : transList.isNotEmpty
-          ? ListView.builder(
-        itemCount: transList.length,
-        itemBuilder: (context, index) =>
-            _buildTransactionTile(transList[index]),
-      )
-          : Center(
-        child: Text(
-          errorMessage.isNotEmpty ? errorMessage : 'No transactions available.',
-          style: const TextStyle(fontSize: 16, color: Colors.grey),
-          textAlign: TextAlign.center,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Transactions (${DateFormat('yyyy-MM-dd').format(selectedStartDate!)} to ${DateFormat('yyyy-MM-dd').format(selectedEndDate!)})",
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              ElevatedButton(
+                onPressed: _selectDateRange,
+                child: const Text("Filter"),
+              ),
+            ],
+          ),
         ),
-      ),
+        Expanded(
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : transList.isNotEmpty
+              ? ListView.builder(
+            itemCount: transList.length,
+            itemBuilder: (context, index) =>
+                _buildTransactionTile(transList[index]),
+          )
+              : Center(
+            child: Text(
+              errorMessage.isNotEmpty
+                  ? errorMessage
+                  : 'No transactions available.',
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

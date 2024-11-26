@@ -58,10 +58,14 @@ class _SamanListDetailState extends State<SamanListDetail> {
           message: 'You are Successfully pay the saman.',
         );
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => SamanListScreen(userId: widget.userId)),
-        );
+        // Delay navigation to allow the dialog box to display
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SamanListScreen(userId: widget.userId)),
+          );
+        });
+
       } else {
         setState(() {
           errorMessage = 'Payment failed: ${response.body}';

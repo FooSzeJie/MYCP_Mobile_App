@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class TransactionDetail extends StatelessWidget {
 
+  final String name;
   final double money;
   final String date;
   final String status;
@@ -9,6 +10,7 @@ class TransactionDetail extends StatelessWidget {
 
   const TransactionDetail({
     super.key,
+    required this.name,
     required this.money,
     required this.date,
     required this.status,
@@ -64,7 +66,7 @@ class TransactionDetail extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "TOKEN",
+                      "Name",
                       style: TextStyle(
                         fontSize: 20,
                         color: Colors.black.withOpacity(0.7)
@@ -72,7 +74,7 @@ class TransactionDetail extends StatelessWidget {
                     ),
 
                     Text(
-                      "${this.money}",
+                      "${this.name}",
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold
