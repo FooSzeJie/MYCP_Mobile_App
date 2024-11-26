@@ -1,5 +1,6 @@
 import 'package:client/components/confirm_dialog.dart';
 import 'package:client/components/timer_control.dart'; // Import TimerControlWidget
+import 'package:client/screens/Saman/Saman%20List/saman_list_screen.dart';
 import "package:client/screens/Saman/saman_screen.dart";
 import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_screen.dart';
 import 'package:client/screens/Car/Car_List/car_list_screen.dart';
@@ -35,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     "Car Register",
     "Transaction",
     "Saman",
+    "Saman List",
     "Profile",
     "Logout",
   ];
@@ -44,6 +46,7 @@ class _HomePageState extends State<HomePage> {
     const Color(0xFF6FE08D),
     const Color(0xFF618DFD),
     const Color(0xFFFC7F7F),
+    const Color(0xFFFFD966),
     const Color(0xFFCB84FB),
     const Color(0xFF78E667),
   ];
@@ -53,6 +56,7 @@ class _HomePageState extends State<HomePage> {
     const Icon(Icons.car_rental, color: Colors.white, size: 50),
     const Icon(Icons.assignment, color: Colors.white, size: 50),
     const Icon(Icons.camera, color: Colors.white, size: 50),
+    const Icon(Icons.list, color: Colors.white, size: 50),
     const Icon(Icons.person, color: Colors.white, size: 50),
     const Icon(Icons.logout, color: Colors.white, size: 50),
   ];
@@ -137,6 +141,7 @@ class _HomePageState extends State<HomePage> {
       CarListScreen(userId: widget.userId),
       TransactionScreen(userId: widget.userId),
       SamanScreen(userId: widget.userId),
+      SamanListScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),
     ];
 

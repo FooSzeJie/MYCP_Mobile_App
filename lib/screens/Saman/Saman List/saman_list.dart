@@ -79,7 +79,7 @@ class _SamanListState extends State<SamanList> {
             ),
           ),
           title: Text(
-            'Offense: ${saman['name'] ?? 'Unknown'}',
+            'Offense: ${saman['offense'] ?? 'Unknown'}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Text(

@@ -118,9 +118,11 @@ class _SamanFormState extends State<SamanForm> {
   }
 
   Future<void> _givenSaman(String licensePlate) async {
+    final dateNow = DateTime.now().toLocal();
+
     final payload = {
-      "name": "Parking Fee Not Paid",
-      'date': DateTime.now().toIso8601String(),
+      "offense": "Parking Fee Not Paid",
+      'date': dateNow.toIso8601String(),
       'license_plate': licensePlate,
       'creator': widget.userId,
     };

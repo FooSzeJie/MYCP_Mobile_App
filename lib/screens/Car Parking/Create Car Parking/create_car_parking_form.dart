@@ -250,6 +250,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
     final local_authority = "MBJB";
 
     final payload = {
+      "name" : "Paid Car Parking Fees",
       "money" :  _totalPrice,
       'date': starting_time.toIso8601String(),
       'deliver': local_authority,

@@ -30,6 +30,7 @@ class _SamanListDetailState extends State<SamanListDetail> {
     final localAuthority = "MBJB";
 
     final payload = {
+      "name" : "Paid Saman",
       "money": widget.saman['price']?.toStringAsFixed(2),
       'date': startingTime.toIso8601String(),
       'deliver': localAuthority,
@@ -117,7 +118,7 @@ class _SamanListDetailState extends State<SamanListDetail> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Offense: ${saman['name'] ?? 'Unknown'}',
+              'Offense: ${saman['offense'] ?? 'Unknown'}',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
