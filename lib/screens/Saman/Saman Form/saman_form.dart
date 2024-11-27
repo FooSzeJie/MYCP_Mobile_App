@@ -85,15 +85,26 @@ class _SamanFormState extends State<SamanForm> {
       );
 
       if (response.statusCode == 404) {
-        // If no ongoing parking, create saman
-        await _givenSaman(licensePlate);
-
-      } else if (response.statusCode == 200) {
+        // Vehicle not found
         showDialogBox(
           context,
-          title: 'Success',
-          message: 'The car has paid the parking fee.',
+          title: 'Error',
+          message: 'The vehicle details do not match any records.',
         );
+
+      } else if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data.containsKey('message') && data['message'] == 'No ongoing car parking found') {
+          // Vehicle found but no ongoing parking
+          await _givenSaman(licensePlate);
+        } else {
+          // Ongoing parking exists
+          showDialogBox(
+            context,
+            title: 'Success',
+            message: 'The car has already paid for parking.',
+          );
+        }
       } else {
         final errorData = jsonDecode(response.body);
         setState(() {
@@ -162,7 +173,6 @@ class _SamanFormState extends State<SamanForm> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

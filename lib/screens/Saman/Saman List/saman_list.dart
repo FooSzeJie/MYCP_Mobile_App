@@ -38,7 +38,7 @@ class _SamanListState extends State<SamanList> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          vehicles = List<Map<String, dynamic>>.from(data['vehicles']);
+          vehicles = List<Map<String, dynamic>>.from(data['vehicles'] ?? []);
           isLoading = false;
         });
       } else {
@@ -66,7 +66,8 @@ class _SamanListState extends State<SamanList> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SamanListDetailScreen(userId: widget.userId, saman: saman),
+              builder: (context) => SamanListDetailScreen(
+                  userId: widget.userId, saman: saman),
             ),
           );
         },
@@ -97,9 +98,9 @@ class _SamanListState extends State<SamanList> {
     );
   }
 
-
   Widget _buildVehicleCard(Map<String, dynamic> vehicle) {
-    final samanHistory = List<Map<String, dynamic>>.from(vehicle['saman_history'] ?? []);
+    final samanHistory =
+    List<Map<String, dynamic>>.from(vehicle['saman_history'] ?? []);
 
     return Card(
       elevation: 5,
@@ -130,25 +131,26 @@ class _SamanListState extends State<SamanList> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : errorMessage.isNotEmpty
-          ? Center(
-        child: Text(
-          errorMessage,
-          style: const TextStyle(fontSize: 16, color: Colors.red),
-          textAlign: TextAlign.center,
-        ),
-      )
-          : vehicles.isEmpty
-          ? const Center(
-        child: Text(
-          'No saman history found.',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      )
-          : ListView.builder(
-        itemCount: vehicles.length,
-        itemBuilder: (context, index) => _buildVehicleCard(vehicles[index]),
-      );
+        ? const Center(child: CircularProgressIndicator())
+        : errorMessage.isNotEmpty
+        ? Center(
+      child: Text(
+        errorMessage,
+        style: const TextStyle(fontSize: 16, color: Colors.red),
+        textAlign: TextAlign.center,
+      ),
+    )
+        : vehicles.isEmpty
+        ? const Center(
+      child: Text(
+        'No vehicles found.',
+        style: TextStyle(fontSize: 16, color: Colors.grey),
+      ),
+    )
+        : ListView.builder(
+      itemCount: vehicles.length,
+      itemBuilder: (context, index) =>
+          _buildVehicleCard(vehicles[index]),
+    );
   }
 }
