@@ -115,6 +115,8 @@ class _TopUpFormState extends State<TopUpForm> {
       final responseData = json.decode(response.body);
 
       if (responseData["success"] == true) {
+        await _sendEmail();
+
         showDialogBox(
           context,
           title: 'Success',
@@ -147,6 +149,29 @@ class _TopUpFormState extends State<TopUpForm> {
       setState(() {
         _paymentStatus = "Error capturing payment: $error";
       });
+    }
+  }
+
+  Future<void> _sendEmail() async {
+    final payload = {
+      'subject': "MYCP Top Up",
+      'message': "You are already Top up RM${moneyController} to the MyCP APP"
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/${widget.userId}/send_email'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        print("Email error: $errorData");
+      }
+    } catch (e) {
+      print('Error occurred while sending Email: $e');
     }
   }
 

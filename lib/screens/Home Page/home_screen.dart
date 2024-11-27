@@ -83,8 +83,8 @@ class _HomePageState extends State<HomePage> {
         final data = jsonDecode(response.body);
         if (data.containsKey('carParking') && data['carParking'].isNotEmpty) {
           final parkingData = data['carParking'][0];
-          final endTime = DateTime.parse(parkingData['end_time']).toUtc();
-          final now = DateTime.now().toUtc();
+          final endTime = DateTime.parse(parkingData['end_time']).toLocal();
+          final now = DateTime.now().toLocal();
           final remainingTime = endTime.difference(now).inSeconds;
 
           carParkingId = parkingData['_id'];

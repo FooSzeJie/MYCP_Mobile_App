@@ -52,6 +52,8 @@ class _SamanListDetailState extends State<SamanListDetail> {
       if (response.statusCode == 201) {
         await _changeStatus();
 
+        await _sendEmail();
+
         showDialogBox(
           context,
           title: 'Pay Saman Successfully',
@@ -67,9 +69,6 @@ class _SamanListDetailState extends State<SamanListDetail> {
         });
 
       } else {
-        setState(() {
-          errorMessage = 'Payment failed: ${response.body}';
-        });
 
         showDialogBox(
           context,
@@ -108,6 +107,29 @@ class _SamanListDetailState extends State<SamanListDetail> {
       setState(() {
         errorMessage = 'Error occurred: $error';
       });
+    }
+  }
+
+  Future<void> _sendEmail() async {
+    final payload = {
+      'subject': "MYCP Paid Saman",
+      'message': "You are already Paid RM${widget.saman['price']} for Saman"
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/${widget.userId}/send_email'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        print("Email error: $errorData");
+      }
+    } catch (e) {
+      print('Error occurred while sending Email: $e');
     }
   }
 

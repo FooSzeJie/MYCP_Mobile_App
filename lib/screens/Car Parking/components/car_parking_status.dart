@@ -51,8 +51,8 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
 
           if (parkingData.containsKey('end_time')) {
             // Parse the ISO 8601 end time
-            final endTime = DateTime.parse(parkingData['end_time']).toUtc();
-            final now = DateTime.now().toUtc();
+            final endTime = DateTime.parse(parkingData['end_time']).toLocal();
+            final now = DateTime.now().toLocal();
             final remainingDuration = endTime.difference(now).inSeconds;
 
             setState(() {

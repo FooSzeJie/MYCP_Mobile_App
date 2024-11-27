@@ -202,6 +202,8 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       if (response.statusCode == 201) {
         await _handleCreateParkingTransaction();
 
+        await _sendEmail();
+
         // Await the dialog box to ensure it is displayed before navigation
         await showDialogBox(
           context,
@@ -237,7 +239,6 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       });
     }
   }
-
 
   Future<void> _handleCreateParkingTransaction() async {
     setState(() {
@@ -290,6 +291,29 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _sendEmail() async {
+    final payload = {
+      'subject': "MYCP Paid Parking Fees",
+      'message': "You are already Paid RM${_totalPrice.toStringAsFixed(2)} for Parking Fee in the MyCP APP"
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/users/${widget.userId}/send_email'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        print("Email error: $errorData");
+      }
+    } catch (e) {
+      print('Error occurred while sending Email: $e');
     }
   }
 

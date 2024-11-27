@@ -88,11 +88,6 @@ class _SamanFormState extends State<SamanForm> {
         // If no ongoing parking, create saman
         await _givenSaman(licensePlate);
 
-        showDialogBox(
-          context,
-          title: 'Given Saman',
-          message: 'The car has not paid the parking fee.',
-        );
       } else if (response.statusCode == 200) {
         showDialogBox(
           context,
@@ -139,7 +134,14 @@ class _SamanFormState extends State<SamanForm> {
         body: jsonEncode(payload),
       );
 
-      if (response.statusCode != 201) {
+      if (response.statusCode == 201) {
+        showDialogBox(
+          context,
+          title: 'Given Saman',
+          message: 'The car has not paid the parking fee.',
+        );
+      }
+      else {
         final errorData = jsonDecode(response.body);
         setState(() {
           errorMessage = errorData['message'] ?? 'Failed to issue saman.';
