@@ -18,6 +18,7 @@ class _CameraState extends State<Camera> {
         centerTitle: true,
         title: Text("Scan License Plate"),
       ),
+
     );
   }
 }
