@@ -2,6 +2,7 @@ import 'package:client/screens/Car/components/car.dart';
 import 'package:client/components/dialog.dart';
 import 'package:client/screens/Car/Car_List/car_list_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert'; // For decoding JSON responses
@@ -144,12 +145,17 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
                 TextField(
                   controller: licensePlateController,
                   maxLength: 8,
+                  textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
                     hintText: "License Plate Number",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                     ),
                   ),
+                  // Enforce uppercase using TextInputFormatter
+                  inputFormatters: [
+                    UpperCaseTextFormatter(),
+                  ],
                 ),
                 SizedBox(height: 10),
                 _buildDropdownField(
@@ -235,4 +241,17 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
     ),
   );
+}
+
+// Custom Formatter for Uppercase Conversion
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      // Convert to uppercase and remove spaces
+      text: newValue.text.toUpperCase().replaceAll(' ', ''),
+      selection: newValue.selection,
+    );
+  }
 }

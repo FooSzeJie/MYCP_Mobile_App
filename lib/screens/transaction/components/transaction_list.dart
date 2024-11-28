@@ -185,7 +185,7 @@ class _TransactionListState extends State<TransactionList> {
             children: [
               Text(
                 "Transactions (${DateFormat('yyyy-MM-dd').format(selectedStartDate!)} to ${DateFormat('yyyy-MM-dd').format(selectedEndDate!)})",
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               ElevatedButton(
                 onPressed: _selectDateRange,
