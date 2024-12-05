@@ -51,12 +51,13 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
 
           if (parkingData.containsKey('end_time')) {
             // Parse the ISO 8601 end time
-            final endTime = DateTime.parse(parkingData['end_time']).toLocal();
-            final now = DateTime.now().toLocal();
-            final remainingDuration = endTime.difference(now).inSeconds;
+            final now = DateTime.now().toUtc(); // Current time in UTC
+            final endTime = DateTime.parse(parkingData['end_time']).toUtc(); // Ensure UTC
+
+            final remainingDuration = (endTime.difference(now).inSeconds) - 28800;
 
             setState(() {
-              countdownTime = remainingDuration > 0 ? remainingDuration : 0;
+              countdownTime = remainingDuration > 0 ? remainingDuration : 0; // Avoid negative countdowns
               isLoading = false;
             });
 
@@ -65,7 +66,7 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
           } else {
             setState(() {
               isLoading = false;
-              errorMessage = 'End timer not found for ongoing parking.';
+              errorMessage = 'End time not found for ongoing parking.';
             });
           }
         } else {
@@ -167,6 +168,7 @@ class _CarParkingStatusState extends State<CarParkingStatus> {
     final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
     final minutes = ((seconds % 3600) ~/ 60).toString().padLeft(2, '0');
     final secs = (seconds % 60).toString().padLeft(2, '0');
+
     return '$hours:$minutes:$secs';
   }
 

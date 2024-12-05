@@ -46,7 +46,7 @@ class _SamanFormState extends State<SamanForm> {
   ];
   String? selectedBrand;
 
-  bool isLoading = true;
+  bool isLoading = false;
   String errorMessage = '';
 
   Future<void> _checkCarDuration() async {
@@ -125,11 +125,12 @@ class _SamanFormState extends State<SamanForm> {
   }
 
   Future<void> _givenSaman(String licensePlate) async {
-    final dateNow = DateTime.now().toLocal();
+    setState(() {
+      isLoading = true;
+    });
 
     final payload = {
       "offense": "Parking Fee Not Paid",
-      'date': dateNow.toIso8601String(),
       'license_plate': licensePlate,
       'creator': widget.userId,
     };
@@ -172,6 +173,9 @@ class _SamanFormState extends State<SamanForm> {
         title: 'Error',
         message: 'An unexpected error occurred. Please try again.',
       );
+    }
+    finally {
+      isLoading = false;
     }
   }
 

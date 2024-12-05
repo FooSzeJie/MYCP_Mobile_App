@@ -1,3 +1,4 @@
+import 'package:client/screens/Saman/Camera/saman_camera.dart';
 import 'package:flutter/material.dart';
 
 class Camera extends StatefulWidget {
@@ -18,6 +19,8 @@ class _CameraState extends State<Camera> {
         centerTitle: true,
         title: Text("Scan License Plate"),
       ),
+
+      body: CarScanner(),
 
     );
   }

@@ -26,13 +26,11 @@ class _SamanListDetailState extends State<SamanListDetail> {
       errorMessage = '';
     });
 
-    final startingTime = DateTime.now().toLocal();
     final localAuthority = "MBJB";
 
     final payload = {
       "name" : "Paid Saman",
       "money": widget.saman['price']?.toStringAsFixed(2),
-      'date': startingTime.toIso8601String(),
       'deliver': localAuthority,
       'creator': widget.userId,
     };

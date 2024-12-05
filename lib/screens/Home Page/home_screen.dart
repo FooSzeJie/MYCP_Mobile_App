@@ -1,5 +1,6 @@
 import 'package:client/components/confirm_dialog.dart';
 import 'package:client/components/timer_control.dart'; // Import TimerControlWidget
+import 'package:client/screens/Saman/Camera/saman_camera.dart';
 import 'package:client/screens/Saman/Saman%20List/saman_list_screen.dart';
 import "package:client/screens/Saman/saman_screen.dart";
 import 'package:client/screens/Car%20Parking/Car%20Parking%20Update/car_parking_update_screen.dart';
@@ -85,7 +86,7 @@ class _HomePageState extends State<HomePage> {
           final parkingData = data['carParking'][0];
           final endTime = DateTime.parse(parkingData['end_time']).toLocal();
           final now = DateTime.now().toLocal();
-          final remainingTime = endTime.difference(now).inSeconds;
+          final remainingTime = (endTime.difference(now).inSeconds) - 28800;
 
           carParkingId = parkingData['_id'];
 
@@ -141,6 +142,7 @@ class _HomePageState extends State<HomePage> {
       CarListScreen(userId: widget.userId),
       TransactionScreen(userId: widget.userId),
       SamanScreen(userId: widget.userId),
+      // CarScanner(),
       SamanListScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),
     ];

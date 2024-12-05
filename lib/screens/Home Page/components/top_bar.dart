@@ -34,12 +34,8 @@ class _TopBarState extends State<TopBar> {
 
       final response = await http.get(url);
 
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}"); // Print the response body
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("Decoded response data: $data"); // Print the decoded response
 
         setState(() {
           // Check the structure of the data before accessing 'wallet'

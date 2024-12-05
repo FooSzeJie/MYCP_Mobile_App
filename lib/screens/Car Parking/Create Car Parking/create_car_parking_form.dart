@@ -246,14 +246,11 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       errorMessage = '';
     });
 
-    // final starting_time = DateTime.now().toUtc();
-    final starting_time = DateTime.now().toLocal();
     final local_authority = "MBJB";
 
     final payload = {
       "name" : "Paid Car Parking Fees",
       "money" :  _totalPrice,
-      'date': starting_time.toIso8601String(),
       'deliver': local_authority,
       'creator': widget.userId,
     };
@@ -356,8 +353,11 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
                       ),
                       child: Text(_activeStepIndex == _steps.length - 1 ? 'Finish' : 'Continue'),
                     ),
+
                     SizedBox(width: 8),
+
                     if (_activeStepIndex > 0)
+
                       ElevatedButton(
                         onPressed: details.onStepCancel,
                         style: ElevatedButton.styleFrom(

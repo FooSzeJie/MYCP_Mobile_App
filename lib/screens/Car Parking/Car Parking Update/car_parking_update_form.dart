@@ -185,13 +185,11 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
       errorMessage = '';
     });
 
-    // final starting_time = DateTime.now().toUtc();
-    final starting_time = DateTime.now().toLocal();
     final local_authority = "MBJB";
 
     final payload = {
+      "name" : "Extend the Parking Duration",
       "money" :  _totalPrice,
-      'date': starting_time.toIso8601String(),
       'deliver': local_authority,
       'creator': widget.userId,
     };

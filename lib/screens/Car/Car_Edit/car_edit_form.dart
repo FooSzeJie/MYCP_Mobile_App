@@ -3,9 +3,11 @@ import 'package:client/screens/Car/components/car.dart';
 import 'package:client/components/input_field.dart';
 import 'package:client/components/dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+
 
 class CarEditForm extends StatefulWidget {
   final String userId;  // Pass the user ID when navigating to HomePage
@@ -49,7 +51,7 @@ class _CarEditForm extends State<CarEditForm> {
   ];
   String? selectedBrand;
 
-  bool isLoading = true;
+  bool isLoading = false;
 
   @override
 
@@ -65,6 +67,10 @@ class _CarEditForm extends State<CarEditForm> {
   }
 
   Future <void> _handleUpdateCar () async {
+    setState(() {
+      isLoading = true;
+    });
+
     final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
 
     try {
@@ -110,6 +116,10 @@ class _CarEditForm extends State<CarEditForm> {
         title: 'Updated Failed',       // Optional: Custom title
         message: "Error updating profile. Please try again.",  // Required: Error message
       );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -121,7 +131,21 @@ class _CarEditForm extends State<CarEditForm> {
           child: Column(
             children: [
 
-              InputField(controller: licensePlateController, hintText: 'License Plate Number', maxlength: 8,),
+              TextField(
+                controller: licensePlateController,
+                maxLength: 8,
+                textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  hintText: "License Plate Number",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                // Enforce uppercase using TextInputFormatter
+                inputFormatters: [
+                  UpperCaseTextFormatter(),
+                ],
+              ),
 
               SizedBox(height: 10),
 
@@ -157,9 +181,7 @@ class _CarEditForm extends State<CarEditForm> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                      onPressed: () {
-                        _handleUpdateCar();
-                      },
+                      onPressed: isLoading ? null : _handleUpdateCar,
                       child: Text("Update")),
                 ],
               ),
@@ -212,5 +234,17 @@ class _CarEditForm extends State<CarEditForm> {
       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
     ),
   );
+}
 
+// Custom Formatter for Uppercase Conversion
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(
+      // Convert to uppercase and remove spaces
+      text: newValue.text.toUpperCase().replaceAll(' ', ''),
+      selection: newValue.selection,
+    );
+  }
 }
