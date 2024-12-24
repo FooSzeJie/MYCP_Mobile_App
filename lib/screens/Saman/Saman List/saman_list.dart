@@ -1,5 +1,4 @@
-import 'package:client/screens/Saman/Saman%20List/Saman%20List%20Detail.dart';
-import 'package:client/screens/Saman/Saman%20List/saman_list_detail_screen.dart';
+import 'package:client/screens/Saman/Saman%20List%20detail/saman_list_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
