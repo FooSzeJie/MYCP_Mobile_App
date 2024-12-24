@@ -77,6 +77,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
   void initState() {
     super.initState();
     _fetchVehicleByUser();
+    _fetchDefaultVehicle();
   }
 
   Future<void> _fetchVehicleByUser() async {
@@ -176,7 +177,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
 
     try {
       final baseUrl = dotenv.env["FLUTTER_APP_BACKEND_URL"];
-      final url = Uri.parse('$baseUrl/users/${widget.userId}/profile');
+      final url = Uri.parse('$baseUrl/users/${widget.userId}/default_vehicle');
 
       final response = await http.get(url);
 
