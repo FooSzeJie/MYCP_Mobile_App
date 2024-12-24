@@ -1,6 +1,5 @@
 import 'package:client/screens/Car/Car_List/car_list_screen.dart';
 import 'package:client/screens/Car/components/car.dart';
-import 'package:client/components/input_field.dart';
 import 'package:client/components/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,12 +7,12 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 
-
 class CarEditForm extends StatefulWidget {
-  final String userId;  // Pass the user ID when navigating to HomePage
-  final Car car;  // Pass the Car object
+  final String userId; // Pass the user ID when navigating to HomePage
+  final Car car; // Pass the Car object
 
-  const CarEditForm({Key? key, required this.userId, required this.car}) : super(key: key);  // Constructor with userId
+  const CarEditForm({Key? key, required this.userId, required this.car})
+      : super(key: key);
 
   @override
   State<CarEditForm> createState() => _CarEditForm();
@@ -24,6 +23,7 @@ class _CarEditForm extends State<CarEditForm> {
   TextEditingController licensePlateController = TextEditingController();
   TextEditingController colorController = TextEditingController();
   TextEditingController brandController = TextEditingController();
+  String? _defaultVehicle; // Stores the default vehicle's license plate
 
   final colors = [
     'White',
@@ -55,19 +55,53 @@ class _CarEditForm extends State<CarEditForm> {
   bool isDefault = false;
 
   @override
-
   void initState() {
     super.initState();
-
     // Initialize the text controllers with the current car details
     licensePlateController.text = widget.car.licensePlate;
     colorController.text = widget.car.color;
     brandController.text = widget.car.brand;
-    selectedColor = widget.car.color; // Set initial color
-    selectedBrand = widget.car.brand; // Set initial brand
+    selectedColor = widget.car.color;
+    selectedBrand = widget.car.brand;
+
+    _fetchDefaultVehicle();
   }
 
-  Future <void> _handleUpdateCar () async {
+  Future<void> _fetchDefaultVehicle() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final baseUrl = dotenv.env["FLUTTER_APP_BACKEND_URL"];
+      final url = Uri.parse('$baseUrl/users/${widget.userId}/default_vehicle');
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['user']['default_vehicle'] != null) {
+          // Correctly fetch the default_vehicle license_plate
+          setState(() {
+            _defaultVehicle = data['user']['default_vehicle']['license_plate'] ?? '';
+            isDefault = _defaultVehicle == licensePlateController.text;
+          });
+        }
+      } else {
+        throw Exception('Failed to fetch default vehicle.');
+      }
+    } catch (e) {
+      print('Error fetching default vehicle: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+
+  Future<void> _handleUpdateCar() async {
     setState(() {
       isLoading = true;
     });
@@ -81,7 +115,7 @@ class _CarEditForm extends State<CarEditForm> {
         'license_plate': licensePlateController.text,
         'color': colorController.text,
         'brand': brandController.text,
-        'creator' : widget.userId,
+        'creator': widget.userId,
         'default_vehicle': isDefault,
       };
 
@@ -92,32 +126,28 @@ class _CarEditForm extends State<CarEditForm> {
       );
 
       if (response.statusCode == 200) {
-        // Show the dialog and wait for it to be dismissed
         await showDialogBox(
           context,
           title: 'Updated Successfully',
           message: "You have successfully updated the car information.",
         );
 
-        // After dialog is dismissed, navigate back to the car list
+        // Navigate back to the car list
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => CarListScreen(userId: widget.userId),
           ),
         );
-
       } else {
-        throw Exception('Failed to update profile');
+        throw Exception('Failed to update the car.');
       }
-    } catch (error) {
-      print('Error updating profile: $error');
-
-      // Show the Dialog
-      showDialogBox(
+    } catch (e) {
+      print('Error updating car: $e');
+      await showDialogBox(
         context,
-        title: 'Updated Failed',       // Optional: Custom title
-        message: "Error updating profile. Please try again.",  // Required: Error message
+        title: 'Update Failed',
+        message: "Failed to update car details. Please try again.",
       );
     } finally {
       setState(() {
@@ -128,30 +158,24 @@ class _CarEditForm extends State<CarEditForm> {
 
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         child: Form(
           child: Column(
             children: [
-
               TextField(
                 controller: licensePlateController,
                 maxLength: 8,
                 textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: "License Plate Number",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                 ),
-                // Enforce uppercase using TextInputFormatter
-                inputFormatters: [
-                  UpperCaseTextFormatter(),
-                ],
+                inputFormatters: [UpperCaseTextFormatter()],
               ),
-
-              SizedBox(height: 10),
-
+              const SizedBox(height: 10),
               _buildDropdownField(
                 title: 'Car Color:',
                 value: selectedColor,
@@ -163,9 +187,7 @@ class _CarEditForm extends State<CarEditForm> {
                   });
                 },
               ),
-
-              SizedBox(height: 10),
-
+              const SizedBox(height: 10),
               _buildDropdownField(
                 title: 'Car Brand:',
                 value: selectedBrand,
@@ -177,29 +199,26 @@ class _CarEditForm extends State<CarEditForm> {
                   });
                 },
               ),
-
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               CheckboxListTile(
                 value: isDefault,
-                title: Text(
+                title: const Text(
                   "Set as Default Vehicle",
-                  style: TextStyle(
-                    fontSize: 20,
-                  ),
+                  style: TextStyle(fontSize: 20),
                 ),
                 onChanged: (value) => setState(() => isDefault = value ?? false),
                 controlAffinity: ListTileControlAffinity.leading,
               ),
 
-              SizedBox(height: 10),
-
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
-                      onPressed: isLoading ? null : _handleUpdateCar,
-                      child: Text("Update")),
+                    onPressed: isLoading ? null : _handleUpdateCar,
+                    child: const Text("Update"),
+                  ),
                 ],
               ),
             ],
@@ -223,8 +242,8 @@ class _CarEditForm extends State<CarEditForm> {
           style: TextStyle(fontSize: 16, color: Colors.black.withOpacity(0.7)),
         ),
         Container(
-          margin: EdgeInsets.all(16),
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.black, width: 1),
@@ -232,7 +251,7 @@ class _CarEditForm extends State<CarEditForm> {
           child: DropdownButton<String>(
             value: value,
             iconSize: 36,
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_drop_down,
               color: Colors.black,
             ),
@@ -248,18 +267,17 @@ class _CarEditForm extends State<CarEditForm> {
     value: item,
     child: Text(
       item,
-      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
     ),
   );
 }
 
-// Custom Formatter for Uppercase Conversion
+// Formatter for Uppercase Conversion
 class UpperCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
     return TextEditingValue(
-      // Convert to uppercase and remove spaces
       text: newValue.text.toUpperCase().replaceAll(' ', ''),
       selection: newValue.selection,
     );
