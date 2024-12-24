@@ -48,6 +48,7 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
   ];
   String? selectedBrand;
 
+  bool isDefault = false;
   bool isLoading = true;
   String errorMessage = '';
 
@@ -81,7 +82,8 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
       'license_plate': licensePlate,
       'color': color,
       'brand': brand,
-      'creator': widget.userId
+      'creator': widget.userId,
+      'default_vehicle': isDefault,
     };
 
     try {
@@ -100,6 +102,10 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
+
+        setState(() {
+          print(data);
+        });
 
         Navigator.pushReplacement(
           context,
@@ -181,7 +187,23 @@ class _CarRegisterFormState extends State<CarRegisterForm> {
                     });
                   },
                 ),
+
                 SizedBox(height: 10),
+
+                CheckboxListTile(
+                  value: isDefault,
+                  title: Text(
+                      "Set as Default Vehicle",
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                  onChanged: (value) => setState(() => isDefault = value ?? false),
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+
+                SizedBox(height: 10),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [

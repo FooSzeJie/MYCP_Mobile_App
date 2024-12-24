@@ -87,7 +87,7 @@ class _CarListState extends State<CarList> {
       }
 
       // Correct the URL to match your backend route
-      final url = Uri.parse('$baseUrl/vehicles/$carId/delete');
+      final url = Uri.parse('$baseUrl/vehicles/${widget.userId}/$carId/delete');
 
       final response = await http.delete(url);
 

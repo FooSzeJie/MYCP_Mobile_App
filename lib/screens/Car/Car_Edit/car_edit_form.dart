@@ -52,6 +52,7 @@ class _CarEditForm extends State<CarEditForm> {
   String? selectedBrand;
 
   bool isLoading = false;
+  bool isDefault = false;
 
   @override
 
@@ -76,16 +77,18 @@ class _CarEditForm extends State<CarEditForm> {
     try {
       final url = Uri.parse('$baseUrl/vehicles/${widget.car.id}/update');
 
-      Map<String, dynamic> body = {
+      final payload = {
         'license_plate': licensePlateController.text,
         'color': colorController.text,
         'brand': brandController.text,
+        'creator' : widget.userId,
+        'default_vehicle': isDefault,
       };
 
       final response = await http.patch(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
+        body: jsonEncode(payload),
       );
 
       if (response.statusCode == 200) {
@@ -173,6 +176,20 @@ class _CarEditForm extends State<CarEditForm> {
                     brandController.text = value!;
                   });
                 },
+              ),
+
+              SizedBox(height: 10),
+
+              CheckboxListTile(
+                value: isDefault,
+                title: Text(
+                  "Set as Default Vehicle",
+                  style: TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
+                onChanged: (value) => setState(() => isDefault = value ?? false),
+                controlAffinity: ListTileControlAffinity.leading,
               ),
 
               SizedBox(height: 10),

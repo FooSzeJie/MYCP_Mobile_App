@@ -168,6 +168,42 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
     }
   }
 
+  Future<void> _fetchDefaultVehicle() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+
+    try {
+      final baseUrl = dotenv.env["FLUTTER_APP_BACKEND_URL"];
+      final url = Uri.parse('$baseUrl/users/${widget.userId}/profile');
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['user']['default_vehicle'] != null) {
+          final defaultVehicleId = data['user']['default_vehicle']['_id'];
+          final defaultVehicle = _vehicles.firstWhere(
+                (v) => v['id'] == defaultVehicleId,
+            orElse: () => {},
+          );
+
+          setState(() {
+            _selectedCarPlate = defaultVehicle['license_plate'] ?? '';
+            _selectedCarPlateId = defaultVehicle['id'] ?? '';
+          });
+        }
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Error occurred: $e';
+      });
+    }
+  }
+
   Future<void> _handleCreateCarParking() async {
     setState(() {
       isLoading = true;
@@ -185,6 +221,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       'local_authority': local_authority,
       'vehicle': vehicle,
       'creator': widget.userId,
+      'price': _totalPrice,
     };
 
     try {
@@ -447,6 +484,17 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
   }
 
   DropdownButton<String> _carPlateDropdown() {
+    if (_selectedCarPlate.isEmpty && _vehicles.isNotEmpty) {
+      // Automatically select the default vehicle if available
+      final defaultVehicle = _vehicles.firstWhere(
+            (vehicle) => vehicle['id'] == widget.userId, // Assuming `userId` is tied to the default vehicle
+        orElse: () => _vehicles.first, // Fallback to the first vehicle
+      );
+
+      _selectedCarPlate = defaultVehicle['license_plate'] ?? '';
+      _selectedCarPlateId = defaultVehicle['id'] ?? '';
+    }
+
     return DropdownButton<String>(
       value: _selectedCarPlate.isEmpty ? null : _selectedCarPlate,
       hint: const Text('Select car plate', style: TextStyle(fontSize: 16.0)),
@@ -464,6 +512,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       },
     );
   }
+
 
   Widget _durationButtons() {
     return Wrap(

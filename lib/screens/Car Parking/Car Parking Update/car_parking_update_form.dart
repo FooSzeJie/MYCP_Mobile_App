@@ -126,6 +126,7 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
 
     final payload = {
       'duration': duration,
+      "price" : _totalPrice,
     };
 
     try {
@@ -157,7 +158,7 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
 
       } else {
         final errorData = jsonDecode(response.body);
-        errorMessage = errorData['message'] ?? 'Creation failed. Please try again.';
+        errorMessage = errorData['message'] ?? 'Extends failed. Please try again.';
 
         showDialogBox(
           context,
@@ -314,6 +315,7 @@ class _CarParkingUpdateFormState extends State<CarParkingUpdateForm> {
                       ),
                       child: Text(_activeStepIndex == _steps.length - 1 ? 'Finish' : 'Continue'),
                     ),
+
                     SizedBox(width: 8),
                     if (_activeStepIndex > 0)
                       ElevatedButton(
