@@ -19,6 +19,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
   String _selectedTimeOption = ''; // Holds 'daily' or 'hourly'
   String _selectedCarPlate = '';
   String _selectedCarPlateId = ''; // To store the selected vehicle ID
+  String _selectedLocalAuthority = ''; // Stores the selected local authority
   int _selectedDuration = 0; // Duration in minutes
   double _totalPrice = 0.0;
   bool isLoading = true;
@@ -26,6 +27,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
 
   // List<String> _carPlates = []; // Updated to fetch from the server
   List<Map<String, String>> _vehicles = [];
+  List<Map<String, String>> _localAuthorities = []; // List of local authorities
 
   final Map<String, int> _hourlyDurations = {
     '30 minutes': 30,
@@ -78,6 +80,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
     super.initState();
     _fetchVehicleByUser();
     _fetchDefaultVehicle();
+    _fetchLocalAuthority(); // Fetch local authorities on initialization
   }
 
   Future<void> _fetchVehicleByUser() async {
@@ -205,6 +208,47 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
     }
   }
 
+  Future<void> _fetchLocalAuthority() async {
+    try {
+      final baseUrl = dotenv.env["FLUTTER_APP_BACKEND_URL"];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+      final url = Uri.parse('$baseUrl/local_authority/list');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data.containsKey('localAuthority')) {
+          setState(() {
+            _localAuthorities = List<Map<String, String>>.from(
+              data['localAuthority'].map(
+                    (authority) => {
+                  'id': authority['_id'].toString(),
+                  'name': authority['nickname'].toString(),
+                },
+              ),
+            );
+            // Set the default selected local authority
+            _selectedLocalAuthority = _localAuthorities.isNotEmpty
+                ? _localAuthorities[0]['id']!
+                : '';
+          });
+        } else {
+          throw Exception('No local authorities found.');
+        }
+      } else {
+        throw Exception('Failed to fetch local authorities: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching local authorities: $e');
+      setState(() {
+        errorMessage = 'Error fetching local authorities: $e';
+      });
+    }
+  }
+
   Future<void> _handleCreateCarParking() async {
     setState(() {
       isLoading = true;
@@ -213,7 +257,7 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
 
     final starting_time = DateTime.now().toUtc();
     final duration = _selectedDuration;
-    final local_authority = "MBJB";
+    final local_authority = _selectedLocalAuthority;
     final vehicle = _selectedCarPlateId;
 
     final payload = {
@@ -284,12 +328,18 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
       errorMessage = '';
     });
 
-    final local_authority = "MBJB";
+    // Find the nickname based on the selected local authority ID
+    final localAuthority = _localAuthorities.firstWhere(
+          (authority) => authority['id'] == _selectedLocalAuthority,
+      orElse: () => {'name': _selectedLocalAuthority}, // Fallback to ID if not found
+    );
+
+    final localAuthorityName = localAuthority['name'] ?? _selectedLocalAuthority;
 
     final payload = {
       "name" : "Paid Car Parking Fees",
       "money" :  _totalPrice,
-      'deliver': local_authority,
+      'deliver': localAuthorityName,
       'creator': widget.userId,
     };
 
@@ -446,8 +496,15 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
           children: [
             Text(step['description']!, style: TextStyle(fontSize: 16.0)),
             SizedBox(height: 8),
+
+            _localAuthorityDropdown(),
+
+            SizedBox(height: 10,),
+
             _carPlateDropdown(),
+
             SizedBox(height: 16),
+
             _durationButtons(),
             SizedBox(height: 30),
           ],
@@ -514,6 +571,23 @@ class _CreateCarParkingFormState extends State<CreateCarParkingForm> {
     );
   }
 
+  DropdownButton<String> _localAuthorityDropdown() {
+    return DropdownButton<String>(
+      value: _selectedLocalAuthority.isEmpty ? null : _selectedLocalAuthority,
+      hint: const Text('Select Local Authority', style: TextStyle(fontSize: 16.0)),
+      items: _localAuthorities.map((authority) {
+        return DropdownMenuItem(
+          value: authority['id'],
+          child: Text(authority['name'] ?? '', style: const TextStyle(fontSize: 16.0)),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedLocalAuthority = value ?? '';
+        });
+      },
+    );
+  }
 
   Widget _durationButtons() {
     return Wrap(

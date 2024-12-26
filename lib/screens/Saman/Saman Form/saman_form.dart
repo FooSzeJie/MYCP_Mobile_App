@@ -20,6 +20,9 @@ class _SamanFormState extends State<SamanForm> {
   TextEditingController colorController = TextEditingController();
   TextEditingController brandController = TextEditingController();
 
+  List<Map<String, String>> _localAuthorities = []; // List of local authorities
+  String _selectedLocalAuthority = ''; // Stores the selected local authority
+
   final colors = [
     'White',
     'Black',
@@ -49,6 +52,53 @@ class _SamanFormState extends State<SamanForm> {
   bool isLoading = false;
   String errorMessage = '';
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocalAuthority(); // Fetch local authorities on initialization
+  }
+
+  Future<void> _fetchLocalAuthority() async {
+    try {
+      final baseUrl = dotenv.env["FLUTTER_APP_BACKEND_URL"];
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception('Backend URL is not set correctly in the .env file.');
+      }
+      final url = Uri.parse('$baseUrl/local_authority/list');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data.containsKey('localAuthority')) {
+          setState(() {
+            _localAuthorities = List<Map<String, String>>.from(
+              data['localAuthority'].map(
+                    (authority) => {
+                  'id': authority['_id'].toString(),
+                  'name': authority['nickname'].toString(),
+                },
+              ),
+            );
+            // Set the default selected local authority
+            _selectedLocalAuthority = _localAuthorities.isNotEmpty
+                ? _localAuthorities[0]['id']!
+                : '';
+          });
+        } else {
+          throw Exception('No local authorities found.');
+        }
+      } else {
+        throw Exception('Failed to fetch local authorities: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching local authorities: $e');
+      setState(() {
+        errorMessage = 'Error fetching local authorities: $e';
+      });
+    }
+  }
+
   Future<void> _checkCarDuration() async {
     setState(() {
       isLoading = true;
@@ -71,6 +121,7 @@ class _SamanFormState extends State<SamanForm> {
       'license_plate': licensePlate,
       'color': color,
       'brand': brand,
+      'local_authority': _selectedLocalAuthority,
     };
 
     try {
@@ -133,6 +184,7 @@ class _SamanFormState extends State<SamanForm> {
       "offense": "Parking Fee Not Paid",
       'license_plate': licensePlate,
       'creator': widget.userId,
+      "local_authority" : _selectedLocalAuthority,
     };
 
     try {
@@ -227,6 +279,11 @@ class _SamanFormState extends State<SamanForm> {
                 },
               ),
               SizedBox(height: 10),
+
+              _localAuthorityDropdown(),
+
+              SizedBox(height: 10,),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -276,6 +333,24 @@ class _SamanFormState extends State<SamanForm> {
           ),
         ),
       ],
+    );
+  }
+
+  DropdownButton<String> _localAuthorityDropdown() {
+    return DropdownButton<String>(
+      value: _selectedLocalAuthority.isEmpty ? null : _selectedLocalAuthority,
+      hint: const Text('Select Local Authority', style: TextStyle(fontSize: 16.0)),
+      items: _localAuthorities.map((authority) {
+        return DropdownMenuItem(
+          value: authority['id'],
+          child: Text(authority['name'] ?? '', style: const TextStyle(fontSize: 16.0)),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedLocalAuthority = value ?? '';
+        });
+      },
     );
   }
 

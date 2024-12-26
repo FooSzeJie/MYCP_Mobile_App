@@ -26,14 +26,14 @@ class _SamanListDetailState extends State<SamanListDetail> {
       errorMessage = '';
     });
 
-    final localAuthority = "MBJB";
-
     final payload = {
       "name" : "Paid Saman",
       "money": widget.saman['price']?.toStringAsFixed(2),
-      'deliver': localAuthority,
+      'deliver': widget.saman['local_authority'],
       'creator': widget.userId,
     };
+
+    print(payload);
 
     try {
       final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];

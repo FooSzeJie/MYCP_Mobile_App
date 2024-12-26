@@ -46,6 +46,7 @@ dependencies:
   path_provider: ^2.0.11
   path: ^1.8.3
   palette_generator: ^0.3.3+3
+  flutter_local_notifications: ^17.2.4
 
 dev_dependencies:
   flutter_test:
