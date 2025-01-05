@@ -114,6 +114,12 @@ class _SamanFormState extends State<SamanForm> {
         isLoading = false;
         errorMessage = 'Please fill in all fields.';
       });
+      showDialogBox(
+        context,
+        title: 'Error',
+        message: 'Please fill in all fields.',
+      );
+
       return;
     }
 
