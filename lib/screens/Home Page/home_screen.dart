@@ -1,5 +1,6 @@
 import 'package:client/components/confirm_dialog.dart';
 import 'package:client/components/timer_control.dart'; // Import TimerControlWidget
+import 'package:client/screens/Car%20Parking/Parking%20History/parking_screen.dart';
 import 'package:client/screens/Saman/Camera/saman_camera.dart';
 import 'package:client/screens/Saman/Saman%20List/saman_list_screen.dart';
 import "package:client/screens/Saman/saman_screen.dart";
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
     "Car Parking",
     "Car Register",
     "Transaction",
+    "Parking History",
     "Saman",
     "Saman List",
     "Profile",
@@ -46,6 +48,7 @@ class _HomePageState extends State<HomePage> {
     const Color(0xFFFFCF2F),
     const Color(0xFF6FE08D),
     const Color(0xFF618DFD),
+    const Color(0xFF78E667),
     const Color(0xFFFC7F7F),
     const Color(0xFFFFD966),
     const Color(0xFFCB84FB),
@@ -56,6 +59,7 @@ class _HomePageState extends State<HomePage> {
     const Icon(Icons.car_repair, color: Colors.white, size: 50),
     const Icon(Icons.car_rental, color: Colors.white, size: 50),
     const Icon(Icons.assignment, color: Colors.white, size: 50),
+    const Icon(Icons.list_alt_outlined, color: Colors.white, size: 50),
     const Icon(Icons.camera, color: Colors.white, size: 50),
     const Icon(Icons.list, color: Colors.white, size: 50),
     const Icon(Icons.person, color: Colors.white, size: 50),
@@ -92,13 +96,14 @@ class _HomePageState extends State<HomePage> {
 
           remainingDurationNotifier.value = remainingTime > 0 ? remainingTime : null; // Update only when valid
 
-          if (remainingTime <= 600 && !tenMinuteWarningSent) {
+          if (remainingTime <= 600 && remainingTime > 598 && !tenMinuteWarningSent) {
+            await _sendSMSNotification("You have 10 minutes left for your car parking.");
             print("10 minutes warning sent.");
-            tenMinuteWarningSent = true; // Prevent duplicate warnings
+            tenMinuteWarningSent = true;  // Prevents further notifications until timer hits 0
           }
-
-          if (remainingTime <= 0) {
-            await _terminateTimer(carParkingId!);
+          if (remainingTime <= 0) { // Parking time over
+            await _sendSMSNotification("Your car parking duration is over.");
+            await _terminateTimer(carParkingId!); // Auto terminate parking session
             print("Time's up. Parking session terminated.");
           }
         } else {
@@ -108,6 +113,28 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (error) {
       print('Error checking parking time: $error');
+    }
+  }
+
+  Future<void> _sendSMSNotification(String message) async {
+    final payload = {
+      'message': message
+    };
+
+    try {
+      final baseUrl = dotenv.env['FLUTTER_APP_BACKEND_URL'];
+      final response = await http.post(
+        Uri.parse('$baseUrl/car_parking/${widget.userId}/SMS'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        print("SMS error: $errorData");
+      }
+    } catch (e) {
+      print('Error occurred while sending SMS: $e');
     }
   }
 
@@ -141,6 +168,7 @@ class _HomePageState extends State<HomePage> {
       CarParkingScreen(userId: widget.userId),
       CarListScreen(userId: widget.userId),
       TransactionScreen(userId: widget.userId),
+      ParkingScreen(userId: widget.userId),
       SamanScreen(userId: widget.userId),
       // CarScanner(),
       SamanListScreen(userId: widget.userId),
